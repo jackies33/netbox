@@ -1,0 +1,20 @@
+
+{% extends 'base/layout.html' %}
+{% load static %}
+{% load form_helpers %}
+{% block content %}
+<h2 class="offset-3"></h2>
+<br>
+    {% if response %}
+          <div style="text-align: center">
+                 <p class="offset-3" style="color:red;"> ERROR  <<<  {{ connecting }}  >>>. </p>
+          </div>
+    {% endif %}
+<br>
+<div style="text-align: center">
+  <button><a href="{% url 'plugins:fast_add_device:add_device_offline' %}">Try one more</a></button>
+</div>
+{% endblock %}
+
+
+
