@@ -42,6 +42,10 @@
 
     <div class="offset-1">
         <table>
+            <p>
+                There is not possible to add stack devices via this offline form!!!
+            </p>
+
             <tr>
                 <td align="left"><b>{{ form.ip_address.label_tag }}*</b></td>
                 <td>{{ form.ip_address }}</td>
@@ -80,6 +84,11 @@
             <tr>
                 <td align="left"><b>{{ form.site.label_tag }}*</b></td>
                 <td>{{ form.site }}</td>
+                <td>{{ form.managed_state.errors }}</td>
+            </tr>
+            <tr>
+                <td align="left"><b>{{ form.serial_number.label_tag }}*</b></td>
+                <td>{{ form.serial_number }}</td>
                 <td>{{ form.managed_state.errors }}</td>
             </tr>
             <tr>
