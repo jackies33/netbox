@@ -102,9 +102,10 @@ class Add_Device_Offline_View(generic.TemplateView):
             device_type = form.cleaned_data['device_type'].id
             device_role = form.cleaned_data['device_role'].id
             tenants = form.cleaned_data['tenants'].id
-            site = form.cleaned.data['site'].id
+            site = form.cleaned_data['site'].id
             conn_scheme = form.cleaned_data['conn_scheme']
             interface_name = form.cleaned_data['interface_name']
+            serial_number = form.cleaned_data['serial_number']
             management = 2
 
             try:
@@ -123,7 +124,7 @@ class Add_Device_Offline_View(generic.TemplateView):
 
             adding = OFFLINE_DEV(str(device_name), int(site), location, int(tenants), int(device_role), str(manufacturer),
                             int(platform), int(device_type), str(ip_address), str(interface_name), conn_scheme, int(management),
-                            racks)
+                            racks, serial_number)
             connecting = adding.offline_preparing()
             #location_id = form.cleaned_data['location'].id
             #print(data)

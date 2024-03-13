@@ -15,7 +15,7 @@ class OFFLINE_DEV():
 
     def __init__(self, device_name = None ,site = None , location= None ,tenants = None ,device_role = None,
                  manufacturer = None ,platform = None ,device_type = None ,ip_address = None,
-                 interface_name = None, conn_scheme = None, management = None, racks = None):
+                 interface_name = None, conn_scheme = None, management = None, racks = None, serial_number = None):
 
         self.device_name = device_name
         self.site = site
@@ -30,16 +30,24 @@ class OFFLINE_DEV():
         self.conn_scheme = conn_scheme
         self.management = management
         self.racks = racks
+        self.serial_number = serial_number
 
 
     def offline_preparing(self, *args):
                 print("<<< Start offline_device.py >>>")
                 nb = pynetbox.api(url=netbox_url, token=netbox_api_token)
                 nb.http_session.verify = False
+                list_serial_devices = []
+                #if self.conn_scheme == "1":
+                #    self.conn_scheme = "ssh"
+                #elif self.conn_scheme == "2":
+                #    self.conn_scheme = "telnet"
+                list_serial_devices.append({'member_id': 0, 'sn_number': self.serial_number, 'master': False})
+                stack_enable = False
                 adding = ADD_NB(self.device_name, self.site, self.location, self.tenants, self.device_role,
                                 self.manufacturer,
                                 self.platform, self.device_type, self.ip_address, self.interface_name, self.conn_scheme,
-                                self.management, self.racks)
+                                self.management, self.racks, list_serial_devices,stack_enable)
                 result = adding.add_device()
                 return result
 
