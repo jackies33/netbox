@@ -14,6 +14,7 @@ from .device_types.ibm import IBM
 from .device_types.aruba import ARUBA_OS
 from .device_types.linux import LINUX
 from .device_types.hpe import HPProCurve9xxx
+from .device_types.mikrotik import MIKROTIK_CONN
 
 
 class CONNECT_DEVICE():
@@ -109,6 +110,12 @@ class CONNECT_DEVICE():
                                            self.location, self.device_role,
                                            self.tenants, conn_scheme, self.racks, self.stack_enable)
                         result = connection.conn_ProCurve9xxx()
+                    elif platform == "MikroTik.RouterOS":
+                        connection = MIKROTIK_CONN(ip_conn, mask, platform_id, self.site,
+                                           self.location, self.device_role,
+                                           self.tenants, conn_scheme, self.racks, self.stack_enable)
+                        result = connection.conn_RouterOS()
+
                     return result
 
 
