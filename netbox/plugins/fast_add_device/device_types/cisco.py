@@ -256,3 +256,43 @@ class CISCO_CONN():
                    except Exception as err:
                        print(f"Error {err}")
                        return [False, err]
+
+            def conn_Cisco_ASA(self,*args):
+                   print("<<< Start cisco.py >>>")
+                   type_device_for_conn = "cisco_asa"
+                   template = CONNECT_PREPARE(self.ip_conn, type_device_for_conn, self.conn_scheme)
+                   host1 = template.template_conn()
+                   print("<<< Start cisco.py >>>")
+                   try:
+                            with ConnectHandler(**host1) as net_connect:
+                                    primary_ip = (f'{self.ip_conn}/{self.mask}')
+                                    output_version = net_connect.send_command('show version', delay_factor=.5)
+                                    output_name = net_connect.send_command('show hostname', delay_factor=.5)
+                                    output_interface = net_connect.send_command(f'show interface ip brief | include {self.ip_conn}', delay_factor=.5)
+                                    device_name = re.findall(r'\S+', output_name)[0]
+                                    manufacturer = 'Cisco Systems'
+                                    device_type = re.findall(f'Hardware:\s+\S+', output_version)[0].split("Hardware:")[1].split()[0]
+                                    if "," in device_type:
+                                        device_type = device_type.split(",")[0]
+                                    interface_name = re.findall(f"^\S+\s+{self.ip_conn}", output_interface, re.MULTILINE)[0].split(self.ip_conn)[0].strip()
+                                    serial_number = re.findall(f"Serial Number:\s+\S+", output_version)[0].split("Serial Number:")[1].split()[0]
+                                    device_type = classifier_device_type(manufacturer,device_type)
+                                    print("<<< Start cisco.py >>>")
+                                    list_serial_devices = []
+                                    list_serial_devices.append({'member_id': 0, 'sn_number': serial_number, 'master': False})
+                                    adding = ADD_NB(device_name, self.site_name, self.location, self.tenants,
+                                                    self.device_role,
+                                                    manufacturer, self.platform, device_type[0], primary_ip, interface_name,
+                                                    self.conn_scheme, self.management, self.racks, list_serial_devices,
+                                                    self.stack_enable)
+                                    result = adding.add_device()
+                                    net_connect.disconnect()
+                                    return result
+
+                   except (NetMikoAuthenticationException, NetMikoTimeoutException) as err:  # exceptions
+                        print('\n\n not connect to ' + self.ip_conn + '\n\n')
+                        return [False, err]
+                   except Exception as err:
+                       print(f"Error {err}")
+                       return [False, err]
+
