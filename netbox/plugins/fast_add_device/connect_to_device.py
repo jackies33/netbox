@@ -115,6 +115,11 @@ class CONNECT_DEVICE():
                                            self.location, self.device_role,
                                            self.tenants, conn_scheme, self.racks, self.stack_enable)
                         result = connection.conn_RouterOS()
+                    elif platform == "Cisco.ASA":
+                         connection = CISCO_CONN(ip_conn,mask,platform_id,self.site,
+                                                      self.location,self.device_role,
+                                                      self.tenants,conn_scheme,self.racks,self.stack_enable)
+                         result = connection.conn_Cisco_ASA()
 
                     return result
 

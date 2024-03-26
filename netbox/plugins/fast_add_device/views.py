@@ -2,7 +2,6 @@
 
 
 from django.shortcuts import render
-from django.views import generic
 from .forms import Device_Offline_PluginForm,Device_Active_PluginForm
 from django.http import HttpResponse
 from http import HTTPStatus
