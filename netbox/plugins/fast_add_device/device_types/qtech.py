@@ -41,8 +41,8 @@ class QTECH_CONN():
                         
                         # ???
                         device_type = classifier_device_type(manufacturer,
-                                                             re.findall(f"^cisco \S+", output_main, re.MULTILINE)[
-                                                                 0].split("cisco")[1].strip())
+                                                             re.findall(f"^qtech \S+", output_main, re.MULTILINE)[
+                                                                 0].split("qtech")[1].strip())
                         print("<<< Start qtech.py >>>")
                         
                         output_interface_name = net_connect.send_command(
@@ -93,75 +93,7 @@ class QTECH_CONN():
                         net_connect.disconnect()
                         return result
 
-                except (NetMikoAuthenticationException, NetMikoTimeoutException) as err:  # exceptions
-                    print('\n\n not connect to (with ssh)' + self.ip_conn + '\n\n')
-                    print("<<< Start qtech.py >>>")
-                    type_device_for_conn = "cisco_ios_telnet"
-                    template = CONNECT_PREPARE(self.ip_conn, type_device_for_conn, 'telnet')
-                    host1 = template.template_conn()
-                    print("<<< Start qtech.py >>>")
-                    try:
-                        with ConnectHandler(**host1) as net_connect:
-                            primary_ip = (f'{self.ip_conn}/{self.mask}')
-                            output_main = net_connect.send_command('show version', delay_factor=.5)
-                            device_name = re.findall(f"\S+ uptime is", output_main)[0].split("uptime is")[0].strip()
-                            manufacturer = 'Cisco Systems'
-                            device_type = classifier_device_type(manufacturer,
-                                                                 re.findall(f"^cisco \S+", output_main,
-                                                                            re.MULTILINE)[
-                                                                     0].split("cisco")[1].strip())
-                            print("<<< Start qtech.py >>>")
-                            output_interface_name = net_connect.send_command(
-                                f'show ip interface brief | include {self.ip_conn}', delay_factor=.5)
-                            interface_name = \
-                                re.findall(f"^\S+\s+{self.ip_conn}", output_interface_name, re.MULTILINE)[0].split(
-                                    self.ip_conn)[0].strip()
-                            list_serial_devices = []
-                            if self.stack_enable == True:
-                                output_switch = net_connect.send_command('show switch', delay_factor=.5)
-                                member_output = re.findall(r"\d\s+Member \S+", output_switch)
-                                master_output = re.findall(r"\d\s+Master \S+", output_switch)[0]
-                                for member in member_output:
-                                    member_id = member.replace(" ", "").split('Member')[0]
-                                    list_serial_devices.append(
-                                        {'member_id': member_id, 'sn_number': '',
-                                         'master': False})
-
-                                master_id = master_output.replace(" ", "").split('Master')[0]
-                                list_serial_devices.append(
-                                    {'member_id': master_id, 'sn_number': '',
-                                     'master': True})
-
-                                output_inventory = net_connect.send_command('show inventory', delay_factor=.5)
-                                member_output = re.findall(f'^NAME:.+\nPID: {device_type[1]}.+SN: \S+',
-                                                           output_inventory,
-                                                           re.MULTILINE)
-                                for member in member_output:
-                                    member_id = re.findall(r'NAME: "\d"', member)[0].split('NAME: "')[1].split('"')[
-                                        0]
-                                    member_sn = re.findall(r'SN: \S+', member)[0].split('SN: ')[1]
-                                    for l in list_serial_devices:
-                                        if l['member_id'] == member_id:
-                                            l['sn_number'] = member_sn
-
-                            elif self.stack_enable == False:
-                                serial_number = \
-                                    re.findall(f'Processor board ID \S+', output_main)[0].split(
-                                        'Processor board ID ')[1]
-                                list_serial_devices.append(
-                                    {'member_id': 0, 'sn_number': serial_number, 'master': False})
-
-                            adding = ADD_NB(device_name, self.site_name, self.location, self.tenants,
-                                            self.device_role,
-                                            manufacturer, self.platform, device_type[0], primary_ip, interface_name,
-                                            self.conn_scheme, self.management, self.racks, list_serial_devices,
-                                            self.stack_enable)
-                            result = adding.add_device()
-                            net_connect.disconnect()
-                            return result
-                    except (NetMikoAuthenticationException, NetMikoTimeoutException) as err:  # exceptions
-                        print('\n\n not connect to ' + self.ip_conn + '\n\n')
-                        return [False, err]
+                
                 except Exception as err:
                     print(f"Error {err}")
                     return [False, err]
