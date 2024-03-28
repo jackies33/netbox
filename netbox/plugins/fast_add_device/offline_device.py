@@ -15,7 +15,8 @@ class OFFLINE_DEV():
 
     def __init__(self, device_name = None ,site = None , location= None ,tenants = None ,device_role = None,
                  manufacturer = None ,platform = None ,device_type = None ,ip_address = None,
-                 interface_name = None, conn_scheme = None, management = None, racks = None, serial_number = None):
+                 interface_name = None, conn_scheme = None, management = None, racks = None,
+                 serial_number = None,resource_group = None):
 
         self.device_name = device_name
         self.site = site
@@ -31,6 +32,7 @@ class OFFLINE_DEV():
         self.management = management
         self.racks = racks
         self.serial_number = serial_number
+        self.resource_group = resource_group
 
 
     def offline_preparing(self, *args):
@@ -47,7 +49,7 @@ class OFFLINE_DEV():
                 adding = ADD_NB(self.device_name, self.site, self.location, self.tenants, self.device_role,
                                 self.manufacturer,
                                 self.platform, self.device_type, self.ip_address, self.interface_name, self.conn_scheme,
-                                self.management, self.racks, list_serial_devices,stack_enable)
+                                self.management, self.racks, list_serial_devices,stack_enable,self.resource_group)
                 result = adding.add_device()
                 return result
 

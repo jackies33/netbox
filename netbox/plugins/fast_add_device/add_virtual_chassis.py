@@ -15,7 +15,7 @@ class ADD_NB_VC():
             def __init__(self, name_device, site, location, tenants, device_role,
                      manufacturer,platform, device_type,
                      primary_ip, interface_name,conn_scheme, management ,racks, list_serial,
-                     stack_enable):
+                     stack_enable,resource_group):
 
                 self.status = 'active'
                 self.type_of_interface = 'virtual'
@@ -35,6 +35,7 @@ class ADD_NB_VC():
                 self.racks = racks
                 self.list_serial = list_serial
                 self.stack_enable = stack_enable
+                self.resource_group = resource_group
 
             def add_vc(self, *args):
                 print("<<< Start add_virtual_chassis.py >>>")
@@ -59,7 +60,7 @@ class ADD_NB_VC():
                             device_type=self.device_type,
                             primary_ip=self.primary_ip,
                             tenant=self.tenants,
-                            custom_fields={'Connection_Scheme': str(self.conn_scheme)},
+                            custom_fields={'Connection_Scheme': str(self.conn_scheme),'Resource_Group':self.resource_group},
                         )
                     except Exception as err:
                         print(f'device {self.name_device} is already done or \n {err}')
