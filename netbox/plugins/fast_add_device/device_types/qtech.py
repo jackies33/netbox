@@ -118,10 +118,10 @@ class QTECH_CONN():
                                 {'member_id': 0, 'sn_number': serial_number, 'master': False})
 
                         adding = ADD_NB(device_name, self.site_name, self.location, self.tenants,
-                                        self.device_role,
-                                        manufacturer, self.platform, device_type[0], primary_ip, interface_name,
-                                        self.conn_scheme, self.management, self.racks, list_serial_devices,
-                                        self.stack_enable)
+                                                self.device_role,
+                                                manufacturer, self.platform, device_type[0], primary_ip, interface_name,
+                                                self.conn_scheme, self.management, self.racks, list_serial_devices,
+                                                self.stack_enable,self.resource_group)
                         result = adding.add_device()
                         net_connect.disconnect()
                         return result
