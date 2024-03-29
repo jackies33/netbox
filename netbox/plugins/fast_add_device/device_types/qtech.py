@@ -47,9 +47,7 @@ class QTECH_CONN():
                         # device_name = re.findall(r"hostname \S+", output_main)[0].split('hostname ')[1]
                         device_name = re.findall(r"hostname \S+", output_main)[0].split("hostname")[1].split()[0]
 
-                        print("Device name is")
-                        
-                        print(device_name)
+                        print("Device name is", device_name)
 
                         manufacturer = 'Qtech'
                         
@@ -59,10 +57,8 @@ class QTECH_CONN():
                         device_type = re.findall(r" Slot 0 : \S+", output_device_type)[0].split(" Slot 0 :")[1].split()[0]
 
                         print("Device type is ", device_type)
-                        print(device_type)
 
                         device_type = classifier_device_type(manufacturer,device_type)
-
                                                 
                         # Get IF name
                         output_interface_name = net_connect.send_command(
@@ -73,8 +69,7 @@ class QTECH_CONN():
                             self.ip_conn)[0].strip()
                         
                         
-                        print("Interface name is")
-                        print(interface_name)
+                        print("Interface name is", interface_name)
 
                         list_serial_devices = []
 
