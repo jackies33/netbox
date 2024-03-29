@@ -123,7 +123,7 @@ class CONNECT_DEVICE():
                                                       self.tenants,conn_scheme,self.racks,self.stack_enable,self.resource_group)
                          result = connection.conn_Cisco_ASA()
 
-                    elif platform == "QTECH":
+                    elif platform == "Qtech.QSW":
                         connection = QTECH_CONN(ip_conn, mask, platform_id, self.site,
                                            self.location, self.device_role,
                                            self.tenants, conn_scheme, self.racks, self.stack_enable)
