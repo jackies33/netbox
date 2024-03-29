@@ -3,7 +3,8 @@ from ..classifier import classifier_device_type
 from netmiko import ConnectHandler , NetMikoAuthenticationException, NetMikoTimeoutException
 import re
 from ..preparing import CONNECT_PREPARE
-
+import paramiko
+from paramiko import SSHException
 
 
 class QTECH_CONN():
@@ -29,7 +30,7 @@ class QTECH_CONN():
 
             def conn_qtech(self, *args):
                 print("<<< Start qtech.py >>>")
-                type_device_for_conn = "qtech"
+                type_device_for_conn = "cisco_ios"
                 template = CONNECT_PREPARE(self.ip_conn, type_device_for_conn, self.conn_scheme)
                 host1 = template.template_conn()
                 try:
