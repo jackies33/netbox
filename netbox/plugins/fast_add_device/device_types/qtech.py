@@ -41,7 +41,7 @@ class QTECH_CONN():
                         output_main = net_connect.send_command('show running-config | include hostname', delay_factor=.5)
 
                         # Extract name from output
-                        device_name = output_main.split()[1].strip()
+                        device_name = output_main.split()[-1]
 
                         print("Device name is {device_name}")
                         
