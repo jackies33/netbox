@@ -42,7 +42,7 @@ class QTECH_CONN():
 
                         # Extract name from output
                         # device_name = output_main.split()[-1]
-                        device_name = re.findall(r"hostname \S+", output_name_result)[0].split('hostname ')[1]
+                        device_name = re.findall(r"hostname \S+", output_main)[0].split('hostname ')[1]
 
                         print("Device name is {device_name}")
                         
