@@ -47,8 +47,10 @@ class QTECH_CONN():
                         # device_name = re.findall(r"hostname \S+", output_main)[0].split('hostname ')[1]
                         device_name = re.findall(r"hostname \S+", output_main)[0].split("hostname")[1].split()[0]
 
-                        print("Device name is {device_name}")
+                        print("Device name is")
                         
+                        print(device_name)
+
                         manufacturer = 'Qtech'
                         
                         # Get device type
