@@ -61,6 +61,8 @@ class QTECH_CONN():
                         print("Device type is ", device_type)
                         print(device_type)
 
+                        device_type = classifier_device_type(manufacturer,device_type)
+
                                                 
                         # Get IF name
                         output_interface_name = net_connect.send_command(
