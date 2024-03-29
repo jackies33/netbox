@@ -58,8 +58,7 @@ class QTECH_CONN():
                         # device_type = classifier_device_type(manufacturer, output_device_type.split()[-1].strip())
                         device_type = re.findall(r" Slot 0 : \S+", output_device_type)[0].split(" Slot 0 :")[1].split()[0]
 
-                        print("Device type is")
-
+                        print("Device type is ", device_type)
                         print(device_type)
 
                                                 
@@ -113,9 +112,7 @@ class QTECH_CONN():
                             serial_number = \
                             re.findall(r"System serial number    : \S+", output_sn)[0].split("System serial number    :")[1].split()[0]
 
-                            print("SN is")
-                            print(serial_number)
-
+                            print("SN is ", serial_number)
 
                             list_serial_devices.append(
                                 {'member_id': 0, 'sn_number': serial_number, 'master': False})
