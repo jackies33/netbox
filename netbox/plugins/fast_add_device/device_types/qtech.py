@@ -46,12 +46,13 @@ class QTECH_CONN():
                         
                         manufacturer = 'Qtech'
                         
-                        # ???
-                        device_type = classifier_device_type(manufacturer,
-                                                             re.findall(f"^qtech \S+", output_main, re.MULTILINE)[
-                                                                 0].split("qtech")[1].strip())
-                        print("<<< Start qtech.py >>>")
-                        
+                        # Get device type
+                        output_device_type = net_connect.send_command('show version | include Slot', delay_factor=.5)
+                        device_type = classifier_device_type(manufacturer, output_device_type.split()[-1].strip())
+                        print("Device name is {device_type}")
+
+                                                
+                        # Get IF name
                         output_interface_name = net_connect.send_command(
                             f'show ip interface brief | include {self.ip_conn}', delay_factor=.5)
                         
@@ -59,6 +60,8 @@ class QTECH_CONN():
                         re.findall(f"^\S+\s+{self.ip_conn}", output_interface_name, re.MULTILINE)[0].split(
                             self.ip_conn)[0].strip()
                         
+                        print("Interface name is {interface_name}")
+
                         list_serial_devices = []
 
                         # IF STACK
@@ -93,7 +96,11 @@ class QTECH_CONN():
                         # IF NOT STACK
                         elif self.stack_enable == False:
                             serial_number = \
-                            re.findall(f'Processor board ID \S+', output_main)[0].split('Processor board ID ')[1]
+                            re.findall(f'Serial number', output_main)[0].split(' Serial number       : ')[1]
+
+                            print("SN is {serial_number}")
+
+
                             list_serial_devices.append(
                                 {'member_id': 0, 'sn_number': serial_number, 'master': False})
 
