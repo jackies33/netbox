@@ -49,7 +49,8 @@ class Device_Active_PluginForm(NetBoxModelForm):
                     device_role = DynamicModelChoiceField(required=True, label='device role',queryset=DeviceRole.objects.all())
                     tenants = DynamicModelChoiceField(required=True, label='tenants', queryset=Tenant.objects.all())
                     site = DynamicModelChoiceField(required=True, label='site', queryset=Site.objects.all())
-                    resource_group = DynamicModelChoiceField(required=True, label='resource group', queryset=ContactRole.objects.all())
+                    resource_group = DynamicModelChoiceField(required=True, label='resource group',
+                                                             queryset=ContactRole.objects.all(),initial=2)
                     location = DynamicModelChoiceField(required=False, label='location',queryset=Location.objects.all())
                     racks = DynamicModelChoiceField(required=False, label='rack', queryset=Rack.objects.all())
                     stack = forms.BooleanField(label='is it stack?', required=False)
