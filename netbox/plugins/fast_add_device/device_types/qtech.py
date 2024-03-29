@@ -108,8 +108,10 @@ class QTECH_CONN():
                         
                         # IF NOT STACK
                         elif self.stack_enable == False:
+                            output_sn = net_connect.send_command('show version | include serial', delay_factor=.5)
+
                             serial_number = \
-                            re.findall(f'Serial number', output_main)[0].split(' Serial number       : ')[1]
+                            re.findall(r"System serial number    : \S+", output_sn)[0].split("System serial number    :")[1].split()[0]
 
                             print("SN is")
                             print(serial_number)
