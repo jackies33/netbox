@@ -1,6 +1,6 @@
 
 
-
+from django.views import generic
 from django.shortcuts import render
 from .forms import Device_Offline_PluginForm,Device_Active_PluginForm
 from django.http import HttpResponse
@@ -33,7 +33,9 @@ class Add_Device_Active_View(generic.TemplateView):
             device_role = form.cleaned_data['device_role'].id
             tenants = form.cleaned_data['tenants'].id
             site = form.cleaned_data['site'].id
+            resource_group = form.cleaned_data['resource_group'].id
             stack_enable = form.cleaned_data['stack']
+
 
             try:
                 location = form.cleaned_data['location'].id
@@ -50,7 +52,7 @@ class Add_Device_Active_View(generic.TemplateView):
                 racks = None
 
             device_connect = CONNECT_DEVICE(str(ip_address),int(platform),
-                                            int(device_role),int(tenants),int(site), location, racks, stack_enable)
+                                            int(device_role),int(tenants),int(site), location, racks, stack_enable,int(resource_group))
             connecting = device_connect.prepare_for_connection()
             #location_id = form.cleaned_data['location'].id
             #print(data)
@@ -102,6 +104,7 @@ class Add_Device_Offline_View(generic.TemplateView):
             device_role = form.cleaned_data['device_role'].id
             tenants = form.cleaned_data['tenants'].id
             site = form.cleaned_data['site'].id
+            resource_group = form.cleaned_data['resource_group'].id
             conn_scheme = form.cleaned_data['conn_scheme']
             interface_name = form.cleaned_data['interface_name']
             serial_number = form.cleaned_data['serial_number']
@@ -123,7 +126,7 @@ class Add_Device_Offline_View(generic.TemplateView):
 
             adding = OFFLINE_DEV(str(device_name), int(site), location, int(tenants), int(device_role), str(manufacturer),
                             int(platform), int(device_type), str(ip_address), str(interface_name), conn_scheme, int(management),
-                            racks, serial_number)
+                            racks, serial_number,int(resource_group))
             connecting = adding.offline_preparing()
             #location_id = form.cleaned_data['location'].id
             #print(data)

@@ -19,7 +19,7 @@ class ADD_NB():
         def __init__(self, name_device, site, location, tenants, device_role,
                      manufacturer,platform, device_type,
                      primary_ip, interface_name,conn_scheme, management ,racks, list_serial_devices,
-                     stack_enable):
+                     stack_enable,resource_group):
 
             self.status = 'active'
             self.type_of_interface = 'virtual'
@@ -39,6 +39,7 @@ class ADD_NB():
             self.racks = racks
             self.list_serial_devices = list_serial_devices
             self.stack_enable = stack_enable
+            self.resource_group = resource_group
 
 
 
@@ -106,7 +107,7 @@ class ADD_NB():
                         device_type=self.device_type,
                         primary_ip=self.primary_ip,
                         tenant=self.tenants,
-                        custom_fields={'Connection_Scheme': str(self.conn_scheme)},
+                        custom_fields={'Connection_Scheme': str(self.conn_scheme),'Resource_Group':self.resource_group},
                     )
                 except Exception as err:
                     print(f'device {self.name_device} is already done or \n {err}')

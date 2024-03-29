@@ -15,7 +15,7 @@ class MIKROTIK_CONN():
 
             def __init__(self, ip_conn=None, mask=None, platform=None, site_name=None,
                          location=None, device_role=None, tenants=None, conn_scheme=None,
-                         racks=None, stack_enable=None):
+                         racks=None, stack_enable=None,resource_group=None):
                 self.ip_conn = ip_conn
                 self.mask = mask
                 self.platform = platform
@@ -27,6 +27,7 @@ class MIKROTIK_CONN():
                 self.racks = racks
                 self.management = 1
                 self.stack_enable = stack_enable
+                self.resource_group = resource_group
 
 
             def conn_RouterOS(self ,*args):
@@ -57,7 +58,7 @@ class MIKROTIK_CONN():
                                         self.device_role,
                                         manufacturer, self.platform, device_type[0], primary_ip, interface_name,
                                         self.conn_scheme, self.management, self.racks, list_serial_devices,
-                                        self.stack_enable)
+                                        self.stack_enable,self.resource_group)
                         result = adding.add_device()
                         return result
 

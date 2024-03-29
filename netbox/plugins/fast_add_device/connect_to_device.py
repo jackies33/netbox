@@ -25,7 +25,7 @@ class CONNECT_DEVICE():
         """
 
         def __init__(self, ip_address,platform,
-                     device_role,tenants,site,location,racks,stack_enable):
+                     device_role,tenants,site,location,racks,stack_enable,resource_group):
 
             self.ip_address = ip_address
             self.platform = platform
@@ -35,6 +35,7 @@ class CONNECT_DEVICE():
             self.location = location
             self.racks = racks
             self.stack_enable = stack_enable
+            self.resource_group =resource_group
 
 
         def prepare_for_connection(self, *args):
@@ -64,62 +65,62 @@ class CONNECT_DEVICE():
                     if platform == "Huawei.VRP":
                          connection = HUAWEI_CONN(ip_conn,mask,platform_id,self.site,
                                                       self.location,self.device_role,
-                                                      self.tenants,conn_scheme,self.racks,self.stack_enable)
+                                                      self.tenants,conn_scheme,self.racks,self.stack_enable,self.resource_group)
                          result = connection.conn_Huawei()
                     elif platform == "Juniper.JUNOS":
                          connection = JUNIPER_CONN(ip_conn,mask,platform_id,self.site,
                                                       self.location,self.device_role,
-                                                      self.tenants,conn_scheme,self.racks,self.stack_enable)
+                                                      self.tenants,conn_scheme,self.racks,self.stack_enable,self.resource_group)
                          result = connection.conn_Juniper_rpc()
                     elif platform == "Cisco.IOS":
                          connection = CISCO_CONN(ip_conn,mask,platform_id,self.site,
                                                       self.location,self.device_role,
-                                                      self.tenants,conn_scheme,self.racks,self.stack_enable)
+                                                      self.tenants,conn_scheme,self.racks,self.stack_enable,self.resource_group)
                          result = connection.conn_Cisco_IOS()
                     elif platform == "Cisco.IOSXR":
                          connection = CISCO_CONN(ip_conn,mask,platform_id,self.site,
                                                       self.location,self.device_role,
-                                                      self.tenants,conn_scheme,self.racks,self.stack_enable)
+                                                      self.tenants,conn_scheme,self.racks,self.stack_enable,self.resource_group)
                          result = connection.conn_Cisco_IOS_XR()
                     elif platform == "IBM.NOS":
                          connection = IBM(ip_conn,mask,platform_id,self.site,
                                                       self.location,self.device_role,
-                                                      self.tenants,conn_scheme,self.racks,self.stack_enable)
+                                                      self.tenants,conn_scheme,self.racks,self.stack_enable,self.resource_group)
                          result = connection.conn_IBM_lenovo_sw()
                     elif platform == "Cisco.NXOS":
                          connection = CISCO_CONN(ip_conn,mask,platform_id,self.site,
                                                       self.location,self.device_role,
-                                                      self.tenants,conn_scheme,self.racks,self.stack_enable)
+                                                      self.tenants,conn_scheme,self.racks,self.stack_enable,self.resource_group)
                          result = connection.conn_Cisco_NXOS()
                     elif platform == "Aruba.ArubaOS":
                         connection = ARUBA_OS(ip_conn, mask, platform_id, self.site,
                                                      self.location,self.device_role,
-                                                     self.tenants, conn_scheme,self.racks,self.stack_enable)
+                                                     self.tenants, conn_scheme,self.racks,self.stack_enable,self.resource_group)
                         result = connection.conn_AWMP()
                     elif platform == "Fortinet.Fortigate":
                         connection = FORTINET_CONN(ip_conn, mask, platform_id, self.site,
                                                      self.location,self.device_role,
-                                                     self.tenants, conn_scheme,self.racks,self.stack_enable)
+                                                     self.tenants, conn_scheme,self.racks,self.stack_enable,self.resource_group)
                         result = connection.conn_FortiGate()
                     elif platform == "OS.Linux":
                         connection = LINUX(ip_conn, mask, platform_id, self.site,
                                                      self.location,self.device_role,
-                                                     self.tenants, conn_scheme,self.racks,self.stack_enable)
+                                                     self.tenants, conn_scheme,self.racks,self.stack_enable,self.resource_group)
                         result = connection.conn_OS_Linux()
                     elif platform == "HP.ProCurve9xxx":
                         connection = HPProCurve9xxx(ip_conn, mask, platform_id, self.site,
                                            self.location, self.device_role,
-                                           self.tenants, conn_scheme, self.racks, self.stack_enable)
+                                           self.tenants, conn_scheme, self.racks, self.stack_enable,self.resource_group)
                         result = connection.conn_ProCurve9xxx()
                     elif platform == "MikroTik.RouterOS":
                         connection = MIKROTIK_CONN(ip_conn, mask, platform_id, self.site,
                                            self.location, self.device_role,
-                                           self.tenants, conn_scheme, self.racks, self.stack_enable)
+                                           self.tenants, conn_scheme, self.racks, self.stack_enable,self.resource_group)
                         result = connection.conn_RouterOS()
                     elif platform == "Cisco.ASA":
                          connection = CISCO_CONN(ip_conn,mask,platform_id,self.site,
                                                       self.location,self.device_role,
-                                                      self.tenants,conn_scheme,self.racks,self.stack_enable)
+                                                      self.tenants,conn_scheme,self.racks,self.stack_enable,self.resource_group)
                          result = connection.conn_Cisco_ASA()
 
                     elif platform == "QTECH":

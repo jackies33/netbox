@@ -11,6 +11,7 @@ from dcim.models.sites import Location,Site
 from dcim.models.racks import Rack
 from dcim.models.devices import Platform,DeviceType,DeviceRole,Manufacturer
 from tenancy.models.tenants import Tenant
+from tenancy.models.contacts import ContactRole
 #from ipam.forms import IPAddressForm
 
 class Device_Offline_PluginForm(NetBoxModelForm):
@@ -26,6 +27,7 @@ class Device_Offline_PluginForm(NetBoxModelForm):
         device_role = DynamicModelChoiceField(required=True,label='device role ',queryset=DeviceRole.objects.all())
         tenants = DynamicModelChoiceField(required=True,label='tenants ',queryset=Tenant.objects.all())
         site = DynamicModelChoiceField(required=True,label='site ',queryset=Site.objects.all())
+        resource_group = DynamicModelChoiceField(required=True, label='resource group',queryset=ContactRole.objects.all())
         location = DynamicModelChoiceField(required=False,label='location ',queryset = Location.objects.all())
         racks = DynamicModelChoiceField(required=False,label='rack ',queryset = Rack.objects.all())
         conn_scheme = forms.ChoiceField(required=True,label='connection scheme ',choices=choices_scheme)
@@ -47,6 +49,8 @@ class Device_Active_PluginForm(NetBoxModelForm):
                     device_role = DynamicModelChoiceField(required=True, label='device role',queryset=DeviceRole.objects.all())
                     tenants = DynamicModelChoiceField(required=True, label='tenants', queryset=Tenant.objects.all())
                     site = DynamicModelChoiceField(required=True, label='site', queryset=Site.objects.all())
+                    resource_group = DynamicModelChoiceField(required=True, label='resource group',
+                                                             queryset=ContactRole.objects.all(),initial=2)
                     location = DynamicModelChoiceField(required=False, label='location',queryset=Location.objects.all())
                     racks = DynamicModelChoiceField(required=False, label='rack', queryset=Rack.objects.all())
                     stack = forms.BooleanField(label='is it stack?', required=False)
