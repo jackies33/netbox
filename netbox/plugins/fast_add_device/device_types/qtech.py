@@ -35,8 +35,15 @@ class QTECH_CONN():
                 try:
                     with ConnectHandler(**host1) as net_connect:
                         primary_ip = (f'{self.ip_conn}/{self.mask}')
-                        output_main = net_connect.send_command('show version', delay_factor=.5)
-                        device_name = re.findall(f"\S+ uptime is", output_main)[0].split("uptime is")[0].strip()
+
+                        # Get device name
+                        output_main = net_connect.send_command('show running-config | include hostname', delay_factor=.5)
+
+                        # Extract name from output
+                        device_name = output_main.split()[1].strip()
+
+                        print("Device name is {device_name}")
+                        
                         manufacturer = 'Qtech'
                         
                         # ???
@@ -47,10 +54,14 @@ class QTECH_CONN():
                         
                         output_interface_name = net_connect.send_command(
                             f'show ip interface brief | include {self.ip_conn}', delay_factor=.5)
+                        
                         interface_name = \
                         re.findall(f"^\S+\s+{self.ip_conn}", output_interface_name, re.MULTILINE)[0].split(
                             self.ip_conn)[0].strip()
+                        
                         list_serial_devices = []
+
+                        # IF STACK
                         if self.stack_enable == True:
                             output_switch = net_connect.send_command('show switch', delay_factor=.5)
                             member_output = re.findall(r"\d\s+Member \S+", output_switch)
@@ -78,6 +89,8 @@ class QTECH_CONN():
                                     if l['member_id'] == member_id:
                                         l['sn_number'] = member_sn
 
+                        
+                        # IF NOT STACK
                         elif self.stack_enable == False:
                             serial_number = \
                             re.findall(f'Processor board ID \S+', output_main)[0].split('Processor board ID ')[1]
