@@ -68,8 +68,9 @@ class QTECH_CONN():
                             f'show ip interface brief | include {self.ip_conn}', delay_factor=.5)
                         
                         interface_name = \
-                        re.findall(f"^\S+\s+{self.ip_conn}", output_interface_name, re.MULTILINE)[0].split(
+                        re.findall(f"^\S+\s+\d+\s+{self.ip_conn}", output_interface_name, re.MULTILINE)[0].split(
                             self.ip_conn)[0].strip()
+                        
                         
                         print("Interface name is")
                         print(interface_name)
