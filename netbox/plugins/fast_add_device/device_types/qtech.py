@@ -56,7 +56,7 @@ class QTECH_CONN():
                         # Get device type
                         output_device_type = net_connect.send_command('show version | include Slot', delay_factor=.5)
                         # device_type = classifier_device_type(manufacturer, output_device_type.split()[-1].strip())
-                        device_type = re.findall(r" Slot 0 : \S+", output_main)[0].split(" Slot 0 :")[1].split()[0]
+                        device_type = re.findall(r" Slot 0 : \S+", output_device_type)[0].split(" Slot 0 :")[1].split()[0]
 
                         print("Device type is")
 
