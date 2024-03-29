@@ -40,9 +40,12 @@ class QTECH_CONN():
                         # Get device name
                         output_main = net_connect.send_command('show running-config | include hostname', delay_factor=.5)
 
+                        print(output_main)
+
                         # Extract name from output
                         # device_name = output_main.split()[-1]
-                        device_name = re.findall(r"hostname \S+", output_main)[0].split('hostname ')[1]
+                        # device_name = re.findall(r"hostname \S+", output_main)[0].split('hostname ')[1]
+                        device_name = re.findall(r"hostname \S+", output_main)[0].split("hostname")[1].split()[0]
 
                         print("Device name is {device_name}")
                         
