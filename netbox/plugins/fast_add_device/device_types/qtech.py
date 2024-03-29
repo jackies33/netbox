@@ -3,8 +3,7 @@ from ..classifier import classifier_device_type
 from netmiko import ConnectHandler , NetMikoAuthenticationException, NetMikoTimeoutException
 import re
 from ..preparing import CONNECT_PREPARE
-import paramiko
-from paramiko import SSHException
+
 
 
 class QTECH_CONN():
@@ -15,7 +14,7 @@ class QTECH_CONN():
 
             def __init__(self, ip_conn=None, mask=None, platform=None, site_name=None,
                          location=None, device_role=None, tenants=None, conn_scheme=None,
-                         racks=None, stack_enable=None):
+                         racks=None, stack_enable=None,resource_group=None):
                 self.ip_conn = ip_conn
                 self.mask = mask
                 self.platform = platform
@@ -27,6 +26,7 @@ class QTECH_CONN():
                 self.racks = racks
                 self.management = 1
                 self.stack_enable = stack_enable
+                self.resource_group = resource_group
 
             def conn_qtech(self, *args):
                 print("<<< Start qtech.py >>>")
