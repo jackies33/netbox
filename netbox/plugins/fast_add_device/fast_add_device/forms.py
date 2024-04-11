@@ -29,7 +29,7 @@ class Device_Offline_PluginForm(NetBoxModelForm):
         site = DynamicModelChoiceField(required=True,label='site ',queryset=Site.objects.all())
         tg_resource_group = DynamicModelChoiceField(required=True, label='TG resource group',
                                                  initial=2,queryset=ContactRole.objects.all())
-        map_resource_group = DynamicModelChoiceField(required=True, label='MAP resource group',
+        map_resource_group = DynamicModelChoiceField(required=False, label='MAP resource group',
                                                   queryset=ContactRole.objects.all())
         location = DynamicModelChoiceField(required=False,label='location ',queryset = Location.objects.all())
         racks = DynamicModelChoiceField(required=False,label='rack ',queryset = Rack.objects.all())
@@ -53,7 +53,7 @@ class Device_Active_PluginForm(NetBoxModelForm):
                     site = DynamicModelChoiceField(required=True, label='site', queryset=Site.objects.all())
                     tg_resource_group = DynamicModelChoiceField(required=True, label='TG resource group',
                                                                 initial=2, queryset=ContactRole.objects.all())
-                    map_resource_group = DynamicModelChoiceField(required=True, label='MAP resource group',
+                    map_resource_group = DynamicModelChoiceField(required=False, label='MAP resource group',
                                                                  queryset=ContactRole.objects.all())
                     location = DynamicModelChoiceField(required=False,label='location ',queryset = Location.objects.all())
                     racks = DynamicModelChoiceField(required=False, label='rack', queryset=Rack.objects.all())
