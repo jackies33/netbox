@@ -126,7 +126,8 @@ class EXTRACT_NB():
                            'stack_enable': stack_enable,
                            'management_status':status,
                            'conn_scheme': custom_fields['Connection_Scheme'],
-                           'resource_group': custom_fields['Resource_Group']['id'],
+                           'tg_resource_group': custom_fields['TG_Group']['id'],
+                           'map_resource_group': custom_fields['MAP_Group']['id']
             },
                                'add':{},
                                'diff':{}

@@ -127,7 +127,14 @@ class ADD_NB_VC():
                                     id_device.update({'rack': add_data['rack']})
                                 else:
                                     pass
-                                id_device.update({'serial': sn_numb})
+                                if data['map_resource_group'] != None:
+                                    id_device.update({'custom_fields': {'MAP_Group': data['map_resource_group']}})
+                                else:
+                                    pass
+                                try:
+                                    id_device.update({'serial': sn_numb})
+                                except Exception as err:
+                                    pass
 
                                 try:
                                     id_device.update({'primary_ip4': {'address': add_data['primary_ip']}})
@@ -167,6 +174,10 @@ class ADD_NB_VC():
                                     pass
                                 if add_data['rack'] != None:
                                     id_device.update({'rack': add_data['rack']})
+                                else:
+                                    pass
+                                if data['map_resource_group'] != None:
+                                    id_device.update({'custom_fields': {'MAP_Group': data['map_resource_group']}})
                                 else:
                                     pass
                                 try:

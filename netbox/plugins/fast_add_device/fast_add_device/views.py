@@ -49,7 +49,7 @@ class Add_Device_Active_View(generic.TemplateView):
                 device_role = form.cleaned_data['device_role'].id
                 tenants = form.cleaned_data['tenants'].id
                 site = form.cleaned_data['site'].id
-                resource_group = form.cleaned_data['resource_group'].id
+                tg_resource_group = form.cleaned_data['tg_resource_group'].id
                 stack_enable = form.cleaned_data['stack']
                 if stack_enable == 'False':
                     stack_enable = False
@@ -65,6 +65,12 @@ class Add_Device_Active_View(generic.TemplateView):
                     racks = int(racks)
                 except Exception as err:
                     racks = None
+                try:
+                    map_resource_group = form.cleaned_data['map_resource_group'].id
+                    map_resource_group = int(map_resource_group)
+                except Exception as err:
+                    map_resource_group = None
+
                 trans_dict = {'purpose_value': 'add',
                                                     'data': {
                                                         'edit': {},
@@ -78,7 +84,8 @@ class Add_Device_Active_View(generic.TemplateView):
                                                                 'management_status':1,### number 2 becuase online
                                                                 'rack': racks,
                                                                 'stack_enable': stack_enable,
-                                                                'resource_group': resource_group
+                                                                'tg_resource_group': tg_resource_group,
+                                                                'map_resource_group': map_resource_group
                                                         },
                                                         'diff': {}
                                                     }
@@ -139,7 +146,7 @@ class Add_Device_Offline_View(generic.TemplateView):
                 device_role = form.cleaned_data['device_role'].id
                 tenants = form.cleaned_data['tenants'].id
                 site = form.cleaned_data['site'].id
-                resource_group = form.cleaned_data['resource_group'].id
+                tg_resource_group = form.cleaned_data['tg_resource_group'].id
                 conn_scheme = form.cleaned_data['conn_scheme']
                 interface_name = form.cleaned_data['interface_name']
                 serial_number = form.cleaned_data['serial_number']
@@ -157,6 +164,11 @@ class Add_Device_Offline_View(generic.TemplateView):
                 except Exception as err:
                     print(err)
                     racks = None
+                try:
+                    map_resource_group = form.cleaned_data['map_resource_group'].id
+                    map_resource_group = int(map_resource_group)
+                except Exception as err:
+                    map_resource_group = None
                 list_serial_devices = []
                 list_serial_devices.append({'member_id': 0, 'sn_number': str(serial_number), 'master': False})
                 trans_dict = {'purpose_value': 'add',
@@ -178,7 +190,8 @@ class Add_Device_Offline_View(generic.TemplateView):
                                                                 'management_status':2,### number 2 becuase offline
                                                                 'rack': racks,
                                                                 'stack_enable': False,
-                                                                'resource_group': int(resource_group)
+                                                                'tg_resource_group': int(tg_resource_group),
+                                                                'map_resource_group': map_resource_group
                                                             },
                                                             'diff': {}
                                                     }

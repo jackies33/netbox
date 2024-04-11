@@ -64,7 +64,7 @@ class ADD_NB():
                         device_type=data['device_type'],
                         primary_ip=data['primary_ip'],
                         tenant=data['tenants'],
-                        custom_fields={'Connection_Scheme': conn_scheme,'Resource_Group':data['resource_group']},
+                        custom_fields={'Connection_Scheme': conn_scheme,'TG_Group':data['tg_resource_group']},
                     )
                 except Exception as err:
                     print(f'device {data["device_name"]} is already done or \n {err}')
@@ -106,6 +106,10 @@ class ADD_NB():
                     pass
                 if data['rack'] != None:
                     id_device.update({'racks': data['rack']})
+                else:
+                    pass
+                if data['map_resource_group'] != None:
+                    id_device.update({'custom_fields':{'MAP_Group':data['map_resource_group']}})
                 else:
                     pass
                 try:

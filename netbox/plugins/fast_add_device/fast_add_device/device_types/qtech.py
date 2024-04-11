@@ -104,18 +104,26 @@ class QTECH_CONN():
                         net_connect.disconnect()
                         data_for_add.update(
                             {
-                                'site': data['site'], 'location': data['location'],
-                                'tenants': data['tenants'], 'device_role': data['device_role'],
-                                'platform': data['platform'], 'primary_ip': data['primary_ip'],
-                                'device_name': device_name, 'manufacturer': manufacturer,
-                                'device_type': device_type[0], 'interface_name': interface_name,
+                                'site': data['site'],
+                                'location': data['location'],
+                                'tenants': data['tenants'],
+                                'device_role': data['device_role'],
+                                'platform': data['platform'],
+                                'primary_ip': data['primary_ip'],
+                                'device_name': device_name,
+                                'manufacturer': manufacturer,
+                                'device_type': device_type[0],
+                                'interface_name': interface_name,
                                 'list_serial_device': list_serial_device,
                                 'conn_scheme': data['conn_scheme'],
                                 'management_status': data['management_status'],
-                                'rack': data['rack'], 'stack_enable': data['stack_enable'],
-                                'resource_group': data['resource_group']
+                                'rack': data['rack'],
+                                'stack_enable': data['stack_enable'],
+                                'tg_resource_group': data['tg_resource_group'],
+                                'map_resource_group': data['map_resource_group']
                             }
                         )
+
                         return kwargs
 
                 
