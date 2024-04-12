@@ -11,15 +11,20 @@
   <link rel="stylesheet" type="text/css" href="{% static 'netbox-external.css' %}">
   <link rel="stylesheet" type="text/css" href="{% static 'netbox-dark.css' %}">
      <style>
-        .myfield{
-            border:1px solid #ccc;
-            border-radius:5px;
-            height:25px;
-            width:200px;
+        .my_form_style select {
+            border: 1px solid #555;
+            border-radius: 5px;
+            height: 25px;
+            width: 200px;
             margin: 10px 10px 10px 0;
             color: white;
-            background-color: #ccc;
+            background-color: rgba(50, 50, 50, 0.5);
         }
+        my_form_style select option {
+            background-color: rgba(50, 50, 50, 0.5);
+            color: white;
+        }
+
         .mybutton{
             padding: 12px 40px;
             border-radius: 8px;
@@ -40,7 +45,8 @@
     {% if form_errors %}
         {{ form_errors }}
     {% endif %}
-    <form method="post">
+    <form method="post" class="my_form_style">
+    {% csrf_token %}>
         {% csrf_token %}
 
     <div class="offset-1">
@@ -73,7 +79,7 @@
             <tr id="location-row" style="display: none;">
                 <td align="left"><b>location:</b></td>
                 <td align="right">
-                    <select name="location" id="id_location">
+                    <select name="location" id="id_location" class="my_form_style">
                     </select>
                 </td>
                 <td id="location-errors"></td>
@@ -81,7 +87,7 @@
             <tr id="racks-row" style="display: none;">
                 <td align="left"><b>racks:</b></td>
                 <td align="right">
-                    <select name="racks" id="id_racks">
+                    <select name="racks" id="id_racks" class="my_form_style">
                     </select>
                 </td>
                 <td id="racks-errors"></td>
@@ -110,6 +116,7 @@
     <script>
             const siteSelect = document.querySelector('#id_site');
             const locationRow = document.querySelector('#location-row');
+            const racksRow = document.querySelector('#racks-row');
             const locationSelect = document.querySelector('#id_location');
             const racksSelect = document.querySelector('#id_racks');
             const locationErrors = document.querySelector('#location-errors');
@@ -129,7 +136,9 @@
                                 option.value = location.id;
                                 option.textContent = location.name;
                                 locationSelect.appendChild(option);
+                                locationSelect.classList.add('offset-1');
                             });
+                            locationSelect.classList.add('my_form_style')
                         } else {
                             locationRow.style.display = 'none';
                         }
@@ -142,8 +151,6 @@
             });
             locationSelect.addEventListener('change', () => {
                 const selectedLocationId = locationSelect.value;
-                document.querySelector('#id_location').value = selectedLocationId;
-                console.log('selectedLocationId:', selectedLocationId);
                 const url = `/plugins/fast_add_device/get_racks/?location_id=${selectedLocationId}`;
                 console.log('Request URL:', url);
                 fetch(`/plugins/fast_add_device/get_racks/?location_id=${selectedLocationId}`)
@@ -154,13 +161,13 @@
                             racksRow.style.fontFamily = 'Arial, sans-serif';
                             racksSelect.innerHTML = '';
                             data.racks.forEach(racks => {
-                                const option = document.createElement('option1');
-                                option1.value = racks.id;
-                                option1.textContent = racks.name;
-                                racksSelect.appendChild(option1);
+                                const option = document.createElement('option');
+                                option.value = racks.id;
+                                option.textContent = racks.name;
+                                racksSelect.appendChild(option);
                             });
-
-                       }   else {
+                            racksSelect.classList.add('my_form_style')
+                       } else {
                             racksRow.style.display = 'none';
                        }
                 })

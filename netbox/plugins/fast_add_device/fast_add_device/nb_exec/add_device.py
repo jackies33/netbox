@@ -105,7 +105,7 @@ class ADD_NB():
                 else:
                     pass
                 if data['rack'] != None:
-                    id_device.update({'racks': data['rack']})
+                    id_device.update({'rack': data['rack']})
                 else:
                     pass
                 if data['map_resource_group'] != None:
