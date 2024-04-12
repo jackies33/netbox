@@ -1,11 +1,13 @@
 
 
 
+
+
 from django.views import generic
 from django.shortcuts import render
 from django.http import HttpResponse,JsonResponse,HttpResponseBadRequest
 from http import HTTPStatus
-#from django.core import serializers
+
 
 
 
@@ -16,6 +18,8 @@ from .forms import Device_Offline_PluginForm,Device_Active_PluginForm,Device_Cha
 
 
 
+
+null = None
 
 
 class Add_Device_Active_View(generic.TemplateView):
@@ -271,34 +275,61 @@ class Change_Device_Active_View(generic.TemplateView):
 
 
 
-"""
+
+
+def add_tiers_to_locations(locations, level=0):
+    """
+    method for add "-" to name of child locations.
+    """
+    for loc in locations:
+        if loc['level'] == level:
+            loc['name'] = loc['name']
+        elif loc['level'] > level:
+            loc['name'] = '-' * (loc['level'] - level) + loc['name']
+        else:
+            loc['name'] = loc['name'].lstrip('-')
+    for loc in locations:
+        if 'children' in loc:
+            add_tiers_to_locations(loc['children'], level + 1)
+
+
+
+def set_levels(locations):
+    """method for add value with considering level in specific tree_id"""
+    root_locations = {}
+    for loc in locations:
+        if loc['parent_id'] is None:
+            loc['level'] = 0
+            root_locations[loc['tree_id']] = loc['id']
+
+    def assign_levels(location, level):
+        for loc in locations:
+            if loc['parent_id'] == location['id']:
+                loc['level'] = level
+                assign_levels(loc, level + 1)
+
+
+    for tree_id, root_id in root_locations.items():
+        root = next((loc for loc in locations if loc['id'] == root_id), None)
+        if root:
+            assign_levels(root, 1)
+
 
 def get_location(request):
-    print("test get_location")
-    site_id = request.GET.get('site_id')
-    location = Location.objects.filter(site_id=site_id)
-    print(location)
-    location = {'location':list(location.values('name', 'id'))}
-    print(location)
-    #data_json = serializers.serealize('json',location)
-    #print(data_json)
-    return JsonResponse(location, safe=False)
-   # return HttpResponse({'locations': list(location)}, content_type="application/json")
-    #return JsonResponse({'locations': list(location)})
-"""
-
-
-def get_location(request):    ##### method for get data location via AJAX request from form in web page
+    ##### method for get data lcoation via AJAX request from form in web page
     try:
         site_id = request.GET.get('site_id')
         if site_id:
-            location = Location.objects.filter(site_id=site_id).values('id', 'name')
-            return JsonResponse({'location': list(location)})
+            locations = Location.objects.filter(site_id=site_id).values('id', 'name', 'parent_id', 'tree_id')
+            sorted_locations = sorted(locations, key=lambda x: x['tree_id'])
+            set_levels(sorted_locations)
+            add_tiers_to_locations(sorted_locations)
+            return JsonResponse({'location': list(sorted_locations)})
         else:
             return JsonResponse({'error': 'Site ID is missing'}, status=400)
 
     except Exception as err:
-        return JsonResponse({'response': 'False', 'connecting':err}, status=500)
+        return JsonResponse({'response': 'False', 'connecting': err}, status=500)
 
 def get_racks(request):  ##### method for get data racks via AJAX request from form in web page
     try:
