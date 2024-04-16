@@ -42,6 +42,9 @@ class HUAWEI_CONN():
                 type_device_for_conn = 'huawei'
                 dict_for_template = {'ip_conn': ip_conn, 'type_device_for_conn': type_device_for_conn,
                                      'conn_scheme': conn_scheme}
+                if conn_scheme == '2':
+                    dict_for_template = {'ip_conn': ip_conn, 'type_device_for_conn': "huawei_telnet",
+                                         'conn_scheme': conn_scheme}
                 template = CONNECT_PREPARE()
                 host1 = template.template_conn(**dict_for_template)
                 print("<<< Start huawei.py >>>")
@@ -129,7 +132,7 @@ class HUAWEI_CONN():
                     print('\n\n not connect to ' + ip_conn + '\n\n')
                     print("<<< Start huawei.py >>>")
                     #### if ssh not work , script shall try via telnet
-                    if conn_scheme == 'ssh':
+                    if conn_scheme == '1':
                         type_device_for_conn = 'huawei_telnet'
                         dict_for_template = {'ip_conn': ip_conn, 'type_device_for_conn': type_device_for_conn,
                                              'conn_scheme': 'telnet'}

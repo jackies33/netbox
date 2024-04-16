@@ -74,3 +74,9 @@ class Device_Change_Active_PluginForm(NetBoxModelForm):
         fields = ['devices']
 
 
+class Device_ADD_CSV_PluginForm(forms.Form):
+        csv_file = forms.FileField(label='Choose file', widget=forms.FileInput())
+
+
+
+

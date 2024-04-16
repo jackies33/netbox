@@ -7,14 +7,15 @@ from django.views import generic
 from django.shortcuts import render
 from django.http import HttpResponse,JsonResponse,HttpResponseBadRequest
 from http import HTTPStatus
-
+import csv
 
 
 
 from dcim.models.sites import Location
 from dcim.models.racks import Rack
 from .core_exec import CORE
-from .forms import Device_Offline_PluginForm,Device_Active_PluginForm,Device_Change_Active_PluginForm
+from .forms import Device_Offline_PluginForm,Device_Active_PluginForm,\
+    Device_Change_Active_PluginForm,Device_ADD_CSV_PluginForm
 
 
 
@@ -112,6 +113,48 @@ class Add_Device_Active_View(generic.TemplateView):
             return render(request, self.template_bad_result,
                           context={'response': "False", 'connecting': err},
                           status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+
+
+
+
+class Add_Device_CSV_Online_View(generic.TemplateView):
+    print("<<< Start views.py >>>")
+    template_success = 'fast_add_device/csv_success.html'
+    template_main_csv = 'fast_add_device/main_csv.html'
+    template_bad_result = 'fast_add_device/bad_result_csv.html'
+    form_class = Device_ADD_CSV_PluginForm
+
+    def get(self, request):
+        form = self.form_class
+        return render(request, self.template_main_csv, {'form': form})
+
+    def post(self,request):
+        if request.method == 'POST':
+            form = self.form_class(request.POST, request.FILES)
+            if form.is_valid():
+                csv_file = request.FILES['csv_file']
+                result = CORE()
+                connecting = result.add_csv(csv_file)
+                print(connecting)
+                if connecting[0] == True:
+                    bad = connecting[1][0]
+                    success = connecting[1][1]
+                    return render(request, self.template_success,
+                                  context={'response': "True", 'success': success,'bad':bad}, status=HTTPStatus.CREATED)
+
+                elif connecting[0] == False:
+                    return render(request, self.template_bad_result,
+                                  context={'response': "False", 'connecting': connecting[1]},
+                                  status=HTTPStatus.INTERNAL_SERVER_ERROR)
+        else:
+            form = self.form_class()
+        return render(request, self.template_main_csv, {'form': form})
+
+
+
+
 
 
 

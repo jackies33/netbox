@@ -36,7 +36,10 @@ class CISCO_CONN():
                 stack_enable = data['stack_enable']
                 conn_scheme = data['conn_scheme']
                 type_device_for_conn = "cisco_ios"
-                dict_for_template = {'ip_conn':ip_conn,'type_device_for_conn':type_device_for_conn,'conn_scheme':conn_scheme}
+                dict_for_template = {'ip_conn': ip_conn, 'type_device_for_conn': type_device_for_conn,
+                                     'conn_scheme': conn_scheme}
+                if conn_scheme == '2':
+                    dict_for_template = {'ip_conn': ip_conn, 'type_device_for_conn': "cisco_ios_telnet",'conn_scheme': conn_scheme}
                 template = CONNECT_PREPARE()
                 host1 = template.template_conn(**dict_for_template)
                 try:
@@ -115,7 +118,7 @@ class CISCO_CONN():
 
                 except (NetMikoAuthenticationException, NetMikoTimeoutException) as err:  # exceptions
                     #### if ssh not work , script shall try via telnet
-                    if conn_scheme == 'ssh':
+                    if conn_scheme == '1':
                         print('\n\n not connect to (with ssh)' + ip_conn + '\n\n')
                         print("<<< Start cisco.py >>>")
                         type_device_for_conn = "cisco_ios_telnet"

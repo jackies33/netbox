@@ -7,6 +7,10 @@ menu_items = (
         link_text='Active_equipment',
     ),
     PluginMenuItem(
+        link='plugins:fast_add_device:add_device_csv',
+        link_text='CSV_import',
+    ),
+    PluginMenuItem(
         link='plugins:fast_add_device:add_device_offline',
         link_text='Offline_equipment',
     ),
