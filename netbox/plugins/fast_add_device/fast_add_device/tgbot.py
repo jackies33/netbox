@@ -18,7 +18,6 @@ class tg_bot():
                     requests.get(url).json()
                 except ValueError:
                     print("Error send message")
-                return print(f"send message <'{self.message}'> is succesfull")
 
 
 if __name__ == '__main__':

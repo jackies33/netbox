@@ -1,10 +1,6 @@
 
 
 
-
-from ..add_device import ADD_NB
-from ..classifier import classifier_device_type
-from ..my_pass import mylogin , mypass ,rescue_login, rescue_pass
 import re
 from jnpr.junos.exception import ConnectAuthError,ConnectClosedError,ConnectError,ConnectTimeoutError
 from jnpr.junos import Device
@@ -14,6 +10,12 @@ import paramiko
 from paramiko import SSHException
 
 
+
+from ..classifier import classifier_device_type
+from ..my_pass import mylogin , mypass
+
+
+
 class JUNIPER_CONN():
 
 
@@ -21,30 +23,31 @@ class JUNIPER_CONN():
             Class for connection to different device
             """
 
-            def __init__(self, ip_conn=None, mask=None, platform=None, site_name=None,
-                         location=None, device_role=None, tenants=None, conn_scheme=None,
-                         racks=None, stack_enable=None):
-                self.ip_conn = ip_conn
-                self.mask = mask
-                self.platform = platform
-                self.site_name = site_name
-                self.location = location
-                self.device_role = device_role
-                self.tenants = tenants
-                self.conn_scheme = conn_scheme
-                self.racks = racks
-                self.management = 1
-                self.stack_enable = stack_enable
+            def __init__(self, **kwargs):
+                    """
+                    Initialize the values
+                    """
 
 
-            def conn_Juniper_rpc(self, *args):
+            def conn_Juniper_rpc(self, **kwargs):
                 # print('this is connect_to_device_juniper!!!!')
                 # host1 = self.template_conn(ip_conn,manufacturer)
                 print("<<< Start juniper.py >>>")
+                ###consider data for collect and return
+                if kwargs['purpose_value'] == "add":
+                    data = kwargs['data']['add']####add data for consider adding dict
+                    data_for_add = kwargs['data']['add']
+                elif kwargs['purpose_value'] == "edit":
+                    data = kwargs['data']['edit']#### edit data for consider data from extract_nb.py
+                    data_for_add = kwargs['data']['add']
+                else:
+                    return [False,None]
+                ip_conn = data['ip_conn']
+                mask = data['mask']
+                stack_enable = data['stack_enable']
                 try:
 
-                    primary_ip = (f'{self.ip_conn}/{self.mask}')
-                    dev = Device(host=self.ip_conn, user=mylogin, password=mypass)
+                    dev = Device(host=ip_conn, user=mylogin, password=mypass)
                     dev.open()
                     device_name = dev.facts['hostname']
                     device_type = dev.facts['model']
@@ -56,7 +59,7 @@ class JUNIPER_CONN():
                                                                <family>
                                                                   <inet>
                                                                      <address>
-                                                                        <name>{self.ip_conn}/{self.mask}</name>
+                                                                        <name>{ip_conn}/{mask}</name>
                                                                      </address>
                                                                   </inet>
                                                                </family>
@@ -87,7 +90,7 @@ class JUNIPER_CONN():
                                                                                <family>
                                                                                   <inet>
                                                                                      <address>
-                                                                                        <name>{self.ip_conn}/32</name>
+                                                                                        <name>{ip_conn}/32</name>
                                                                                      </address>
                                                                                   </inet>
                                                                                </family>
@@ -111,8 +114,8 @@ class JUNIPER_CONN():
 
                     else:
                         pass
-                    list_serial_devices = []
-                    if self.stack_enable == True:
+                    list_serial_device = []
+                    if stack_enable == True:
                         memb_count = 0
                         vc_info = dev.rpc.get_virtual_chassis_information()
                         # print(etree.tounicode(vc_info))
@@ -131,53 +134,68 @@ class JUNIPER_CONN():
                                     member_role = False
                                 # print(f"Member ID: {member_id}, Serial Status: {member_serial_status}")
                                 memb_count = memb_count + 1
-                                list_serial_devices.append(
+                                list_serial_device.append(
                                     {'member_id': member_id, 'sn_number': member_serial_number, 'master': member_role})
                             elif member_status == "NotPrsnt":
                                 pass
                         if memb_count == 1:
-                            self.stack_enable = False
-                            for l in list_serial_devices:
+                            stack_enable = False
+                            for l in list_serial_device:
                                 if l['master'] == True:
                                     l['master'] = False
                                 else:
                                     pass
                         elif memb_count > 1:
-                            self.stack_enable = True
-                    elif self.stack_enable == False:
+                            stack_enable = True
+                    elif stack_enable == False:
                         inventory = dev.rpc.get_chassis_inventory()
                         serial_number = str(inventory.findtext('.//serial-number'))
-                        list_serial_devices.append(
+                        list_serial_device.append(
                             {'member_id': 0, 'sn_number': serial_number, 'master': False})
                     dev.close()
                     # print('this is connect_to_device_juniper_out!!!!')
                     manufacturer = 'Juniper Networks'
                     device_type = classifier_device_type(manufacturer, device_type)
                     print("<<< Start juniper.py >>>")
-                    adding = ADD_NB(device_name, self.site_name, self.location, self.tenants,
-                                    self.device_role,
-                                    manufacturer, self.platform, device_type[0], primary_ip, interface_name,
-                                    self.conn_scheme, self.management, self.racks, list_serial_devices,
-                                    self.stack_enable)
-                    result = adding.add_device()
+                    ###update data dict for adding
+                    data_for_add.update(
+                        {
+                            'site': data['site'],
+                            'location': data['location'],
+                            'tenants': data['tenants'],
+                            'device_role': data['device_role'],
+                            'platform': data['platform'],
+                            'primary_ip': data['primary_ip'],
+                            'device_name': device_name,
+                            'manufacturer': manufacturer,
+                            'device_type': device_type[0],
+                            'interface_name': interface_name,
+                            'list_serial_device': list_serial_device,
+                            'conn_scheme': data['conn_scheme'],
+                            'management_status': data['management_status'],
+                            'rack': data['rack'],
+                            'stack_enable': data['stack_enable'],
+                            'tg_resource_group': data['tg_resource_group'],
+                            'map_resource_group': data['map_resource_group']
+                        }
+                    )
 
-                    return result
-
+                    return kwargs
                 except (ConnectAuthError, ConnectClosedError, ConnectError, ConnectTimeoutError) as err:  # exceptions
-                            #if rpc bad result - try to connect directly throuh ssh(paramiko)
+                            #######if rpc bad result - try to connect directly throuh ssh(paramiko)
 
-                            print('\n\n not connect to ' + self.ip_conn + f'\n\n {err}')
+                            print('\n\n not connect to ' + ip_conn + f'\n\n {err}')
                             print("<<< Start juniper.py >>>")
-                            primary_ip = (f'{self.ip_conn}/{self.mask}')
+                            primary_ip = (f'{ip_conn}/{mask}')
                             cmnd1 = '\n show version \n\n      '  # Commands
-                            cmnd2 = f'\n show configuration | display set| match {self.ip_conn}  \n\n           '  # Commands
+                            cmnd2 = f'\n show configuration | display set| match {ip_conn}  \n\n           '  # Commands
                             cmnd3 = '\n show chassis hardware  \n\n        '  # Commands
                             cmnd4 = '         \n\n           '
                             cmnd5 = '\n show virtual-chassis \n '
                             ssh = paramiko.SSHClient()
                             ssh.load_system_host_keys()
                             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                            ssh.connect(self.ip_conn,
+                            ssh.connect(ip_conn,
                                         username=mylogin,
                                         password=mypass,
                                         look_for_keys=False)
@@ -194,9 +212,9 @@ class JUNIPER_CONN():
                                 time.sleep(2)
                                 ssh1.send(cmnd2)
                                 time.sleep(2)
-                                if self.stack_enable == True:
+                                if stack_enable == True:
                                     ssh1.send(cmnd5)
-                                elif self.stack_enable == False:
+                                elif stack_enable == False:
                                     ssh1.send(cmnd3)
                                 time.sleep(2)
                                 ssh1.send(cmnd4)
@@ -220,8 +238,8 @@ class JUNIPER_CONN():
                                     interface_name = (f'{interface_first}.{inetrface_count}')
                                 else:
                                     interface_name = interface_first
-                                list_serial_devices = []
-                                if self.stack_enable == True:
+                                list_serial_device = []
+                                if stack_enable == True:
 
                                     chassis_start = re.findall(r'\d \(FPC \d\)\s+ Prsnt\s+\S+\s+\S+\s+\d+\s+\S+', output1,
                                                                re.MULTILINE)
@@ -235,24 +253,29 @@ class JUNIPER_CONN():
                                             member_role = True
                                         else:
                                             member_role = False
-                                        list_serial_devices.append(
+                                        list_serial_device.append(
                                             {'member_id': member_id, 'sn_number': member_serial_number,
                                              'master': member_role})
-                                elif self.stack_enable == False:
+                                elif stack_enable == False:
                                     member_serial_number = \
                                         re.findall(r'Chassis\s+\S+', output1, re.MULTILINE)[0].replace(" ", "").split(
                                             "Chassis")[1]
-                                    list_serial_devices.append(
+                                    list_serial_device.append(
                                         {'member_id': 0, 'sn_number': member_serial_number, 'master': False})
+                                ###update data dict for adding
+                                data_for_add.update({'site': data['site'], 'location': data['location'],
+                                                     'tenants': data['tenants'], 'device_role': data['device_role'],
+                                                     'platform': data['platform'], 'primary_ip': data['primary_ip'],
+                                                     'device_name': device_name, 'manufacturer': manufacturer,
+                                                     'device_type': device_type[0], 'interface_name': interface_name,
+                                                     'list_serial_device': list_serial_device,
+                                                     'conn_scheme': data['conn_scheme'],
+                                                     'management_status': data['management_status'],
+                                                     'rack': data['rack'], 'stack_enable': data['stack_enable'],
+                                                     'resource_group': data['resource_group']
 
-                                adding = ADD_NB(device_name, self.site_name, self.location, self.tenants,
-                                                self.device_role,
-                                                manufacturer, self.platform, device_type[0], primary_ip, interface_name,
-                                                self.conn_scheme, self.management, self.racks, list_serial_devices,
-                                                self.stack_enable)
-                                result = adding.add_device()
-
-                                return result
+                                                     })
+                                return kwargs
 
                             except SSHException as err:
                                 print(f"\n\n\n{err}\n\n\n")

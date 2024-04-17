@@ -42,6 +42,10 @@
 
     <div class="offset-1">
         <table>
+            <p>
+                There is not possible to add stack devices via this offline form!!!
+            </p>
+
             <tr>
                 <td align="left"><b>{{ form.ip_address.label_tag }}*</b></td>
                 <td>{{ form.ip_address }}</td>
@@ -83,6 +87,11 @@
                 <td>{{ form.managed_state.errors }}</td>
             </tr>
             <tr>
+                <td align="left"><b>{{ form.serial_number.label_tag }}*</b></td>
+                <td>{{ form.serial_number }}</td>
+                <td>{{ form.managed_state.errors }}</td>
+            </tr>
+            <tr>
                 <td align="left"><b>{{ form.location.label_tag }}</b></td>
                 <td>{{ form.location }}</td>
                 <td>{{ form.managed_state.errors }}</td>
@@ -100,6 +109,16 @@
             <tr>
                 <td align="left"><b>{{ form.conn_scheme.label_tag }}*</b></td>
                 <td>{{ form.conn_scheme }}</td>
+                <td>{{ form.managed_state.errors }}</td>
+            </tr>
+            <tr>
+                <td align="left"><b>{{ form.tg_resource_group.label_tag }}*</b></td>
+                <td>{{ form.tg_resource_group }}</td>
+                <td>{{ form.managed_state.errors }}</td>
+            </tr>
+            <tr>
+                <td align="left"><b>{{ form.map_resource_group.label_tag }}</b></td>
+                <td>{{ form.map_resource_group }}</td>
                 <td>{{ form.managed_state.errors }}</td>
             </tr>
             </table>
