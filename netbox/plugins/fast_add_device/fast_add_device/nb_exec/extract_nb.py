@@ -38,7 +38,7 @@ class EXTRACT_NB():
                         pass
             device_name = main_value_device.name
             interface_main = None
-            for iface in self.nb.dcim.interfaces.filter(device=device_name):
+            for iface in self.nb.dcim.interfaces.filter(device=device_name,device_id=main_value_device.id):
                 if iface.type.value == 'virtual':
                     interface_main = iface
             custom_fields = main_value_device.custom_fields
@@ -55,6 +55,18 @@ class EXTRACT_NB():
             sn = None
             vc_name = None
             dev_vc = None
+            try:
+                conn_scheme = custom_fields['Connection_Scheme']
+            except Exception as err:
+                conn_scheme = None
+            try:
+                tg_group = custom_fields['TG_Group']['id']
+            except Exception as err:
+                tg_group = None
+            try:
+                map_group = custom_fields['MAP_Group']['id']
+            except Exception as err:
+                map_group = None
             try:
                 location = int(main_value_device.location.id)
             except Exception as err:
@@ -125,15 +137,14 @@ class EXTRACT_NB():
                            'list_serial_device': list_serial_device,
                            'stack_enable': stack_enable,
                            'management_status':status,
-                           'conn_scheme': custom_fields['Connection_Scheme'],
-                           'tg_resource_group': custom_fields['TG_Group']['id'],
-                           'map_resource_group': custom_fields['MAP_Group']['id']
+                           'conn_scheme': conn_scheme,
+                           'tg_resource_group': tg_group,
+                           'map_resource_group': map_group
             },
                                'add':{},
                                'diff':{}
             }})
-            print(trans_dict)
-            return trans_dict
+            return [True,trans_dict]
         except Exception as err:
             return [False, err]
 

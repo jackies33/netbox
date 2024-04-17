@@ -51,6 +51,10 @@ class CORE():
             elif kwargs['purpose_value'] == 'edit':
                 call = EXTRACT_NB()
                 extract = call.extract_for_edit(**kwargs)
+                if extract[0] == False:
+                    return [False, extract[1]]
+                elif extract[0] == True:
+                    extract = extract[1]
                 print("<<< Start core_exec.py >>>")
                 call = CONNECT_DEVICE()
                 prep = call.edit_preparing(**extract)
