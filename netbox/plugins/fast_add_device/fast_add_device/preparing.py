@@ -172,6 +172,10 @@ class CSV_PARSE():
             tg_resource_group = int(nb.tenancy.contact_roles.get(name=row['tg_resource_group']).id)
         except Exception as err:
             tg_resource_group = None
+        name_of_establishment = row['name_of_establishment']
+        if name_of_establishment == '':
+            name_of_establishment = None
+
         my_dict = {'purpose_value': 'add',
                    'data': {
                        'edit': {},
@@ -191,6 +195,7 @@ class CSV_PARSE():
                            'stack_enable': stack,
                            'tg_resource_group': tg_resource_group,
                            'map_resource_group': map_resource_group,
+                           'name_of_establishment': name_of_establishment,
                        },
                        'diff': {}
                    }

@@ -111,7 +111,8 @@ class HPProCurve9xxx():
                             'rack': data['rack'],
                             'stack_enable': data['stack_enable'],
                             'tg_resource_group': data['tg_resource_group'],
-                            'map_resource_group': data['map_resource_group']
+                            'map_resource_group': data['map_resource_group'],
+                            'name_of_establishment': data['name_of_establishment']
                         }
                     )
 

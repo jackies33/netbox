@@ -31,6 +31,7 @@ class Device_Offline_PluginForm(NetBoxModelForm):
                                                  initial=2,queryset=ContactRole.objects.all())
         map_resource_group = DynamicModelChoiceField(required=False, label='MAP resource group',
                                                   queryset=ContactRole.objects.all())
+        name_of_establishment = forms.CharField(required=False, label='name of establishment')
         location = DynamicModelChoiceField(required=False,label='location ',queryset = Location.objects.all())
         racks = DynamicModelChoiceField(required=False,label='rack ',queryset = Rack.objects.all())
         conn_scheme = forms.ChoiceField(required=True,label='connection scheme ',choices=choices_scheme)
@@ -40,7 +41,9 @@ class Device_Offline_PluginForm(NetBoxModelForm):
         class Meta:
             model = Location
             fields = ['ip_address','platform','device_type','device_role','tenants','site',
-                      'location','racks','conn_scheme','interface_name','device_name','manufacturer','serial_number']
+                      'location','racks','conn_scheme','interface_name','device_name','manufacturer','serial_number'
+                      'tg_resource_group','map_resource_group','name_of_establishment'
+                      ]
 
 class Device_Active_PluginForm(NetBoxModelForm):
 
@@ -55,6 +58,7 @@ class Device_Active_PluginForm(NetBoxModelForm):
                                                                 initial=2, queryset=ContactRole.objects.all())
                     map_resource_group = DynamicModelChoiceField(required=False, label='MAP resource group',
                                                                  queryset=ContactRole.objects.all())
+                    name_of_establishment = forms.CharField(required=False, label='name of establishment')
                     location = DynamicModelChoiceField(required=False,label='location ',queryset = Location.objects.all())
                     racks = DynamicModelChoiceField(required=False, label='rack', queryset=Rack.objects.all())
                     stack = forms.ChoiceField(choices=[(True, 'Stack'), (False, 'Not Stack')],
@@ -63,7 +67,9 @@ class Device_Active_PluginForm(NetBoxModelForm):
 
                     class Meta:
                             model = Location
-                            fields = ['ip_address', 'platform', 'device_role', 'tenants', 'site','location','racks', 'stack']
+                            fields = ['ip_address', 'platform', 'device_role', 'tenants', 'site','location','racks', 'stack',
+                                      'tg_resource_group', 'map_resource_group', 'name_of_establishment'
+                                      ]
 
 
 class Device_Change_Active_PluginForm(NetBoxModelForm):

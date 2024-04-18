@@ -75,6 +75,11 @@ class Add_Device_Active_View(generic.TemplateView):
                     map_resource_group = int(map_resource_group)
                 except Exception as err:
                     map_resource_group = None
+                try:
+                    name_of_establishment = form.cleaned_data['name_of_establishment'].id
+                    name_of_establishment = int(name_of_establishment)
+                except Exception as err:
+                    name_of_establishment = None
 
                 trans_dict = {'purpose_value': 'add',
                                                     'data': {
@@ -90,7 +95,8 @@ class Add_Device_Active_View(generic.TemplateView):
                                                                 'rack': racks,
                                                                 'stack_enable': stack_enable,
                                                                 'tg_resource_group': tg_resource_group,
-                                                                'map_resource_group': map_resource_group
+                                                                'map_resource_group': map_resource_group,
+                                                                'name_of_establishment': name_of_establishment
                                                         },
                                                         'diff': {}
                                                     }
@@ -216,6 +222,11 @@ class Add_Device_Offline_View(generic.TemplateView):
                     map_resource_group = int(map_resource_group)
                 except Exception as err:
                     map_resource_group = None
+                try:
+                    name_of_establishment = form.cleaned_data['name_of_establishment'].id
+                    name_of_establishment = int(name_of_establishment)
+                except Exception as err:
+                    name_of_establishment = None
                 list_serial_devices = []
                 list_serial_devices.append({'member_id': 0, 'sn_number': str(serial_number), 'master': False})
                 trans_dict = {'purpose_value': 'add',
@@ -238,7 +249,8 @@ class Add_Device_Offline_View(generic.TemplateView):
                                                                 'rack': racks,
                                                                 'stack_enable': False,
                                                                 'tg_resource_group': int(tg_resource_group),
-                                                                'map_resource_group': map_resource_group
+                                                                'map_resource_group': map_resource_group,
+                                                                'name_of_establishment': name_of_establishment
                                                             },
                                                             'diff': {}
                                                     }

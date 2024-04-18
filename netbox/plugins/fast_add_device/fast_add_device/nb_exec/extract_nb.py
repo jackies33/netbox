@@ -68,6 +68,12 @@ class EXTRACT_NB():
             except Exception as err:
                 map_group = None
             try:
+                name_of_establishment = custom_fields['Name_of_Establishment']
+            except Exception as err:
+                name_of_establishment = None
+            if name_of_establishment == '':
+                name_of_establishment = None
+            try:
                 location = int(main_value_device.location.id)
             except Exception as err:
                 pass
@@ -139,7 +145,8 @@ class EXTRACT_NB():
                            'management_status':status,
                            'conn_scheme': conn_scheme,
                            'tg_resource_group': tg_group,
-                           'map_resource_group': map_group
+                           'map_resource_group': map_group,
+                           'name_of_establishment': name_of_establishment
             },
                                'add':{},
                                'diff':{}
