@@ -76,8 +76,8 @@ class Add_Device_Active_View(generic.TemplateView):
                 except Exception as err:
                     map_resource_group = None
                 try:
-                    name_of_establishment = form.cleaned_data['name_of_establishment'].id
-                    name_of_establishment = int(name_of_establishment)
+                    name_of_establishment = form.cleaned_data['name_of_establishment']
+                    name_of_establishment = str(name_of_establishment)
                 except Exception as err:
                     name_of_establishment = None
 
@@ -223,8 +223,8 @@ class Add_Device_Offline_View(generic.TemplateView):
                 except Exception as err:
                     map_resource_group = None
                 try:
-                    name_of_establishment = form.cleaned_data['name_of_establishment'].id
-                    name_of_establishment = int(name_of_establishment)
+                    name_of_establishment = form.cleaned_data['name_of_establishment']
+                    name_of_establishment = str(name_of_establishment)
                 except Exception as err:
                     name_of_establishment = None
                 list_serial_devices = []

@@ -41,8 +41,8 @@ class Device_Offline_PluginForm(NetBoxModelForm):
         class Meta:
             model = Location
             fields = ['ip_address','platform','device_type','device_role','tenants','site',
-                      'location','racks','conn_scheme','interface_name','device_name','manufacturer','serial_number'
-                      'tg_resource_group','map_resource_group','name_of_establishment'
+                      'location','racks','conn_scheme','interface_name','device_name','manufacturer','serial_number',
+                      'tg_resource_group', 'map_resource_group' ,'name_of_establishment'
                       ]
 
 class Device_Active_PluginForm(NetBoxModelForm):

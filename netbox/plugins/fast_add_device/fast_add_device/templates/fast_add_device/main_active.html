@@ -1,3 +1,4 @@
+
 {% extends 'base/layout.html' %}
 
 {% load form_helpers %}
@@ -11,6 +12,15 @@
   <link rel="stylesheet" type="text/css" href="{% static 'netbox-external.css' %}">
   <link rel="stylesheet" type="text/css" href="{% static 'netbox-dark.css' %}">
      <style>
+        .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        }
         .my_form_style select {
             border: 1px solid #555;
             border-radius: 5px;
@@ -33,19 +43,59 @@
             font-size: 20px;
             color: green;
         }
+        .spinner {
+        margin: 100px auto 0;
+        width: 70px;
+        text-align: center;
+        }
+
+        .spinner > div {
+            width: 18px;
+            height: 18px;
+            background-color: #f7f7f7;
+            border-radius: 100%;
+            display: inline-block;
+            -webkit-animation: bounce 1.4s infinite ease-in-out both;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .spinner .bounce1 {
+            -webkit-animation-delay: -0.32s;
+            animation-delay: -0.32s;
+        }
+
+        .spinner .bounce2 {
+            -webkit-animation-delay: -0.16s;
+            animation-delay: -0.16s;
+        }
+
+        @-webkit-keyframes bounce {
+            0%, 80%, 100% { -webkit-transform: scale(0); }
+            40% { -webkit-transform: scale(1.0); }
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0);
+                -webkit-transform: scale(0);
+            }
+            40% {
+                transform: scale(1.0);
+                -webkit-transform: scale(1.0);
+            }
+        }
      </style>
 </head>
 <h2 class="offset-3">Fill in all forms for add ACTIVE device</h2>
-<br>
-
-    {% if response %}
-       <p class="offset-3"> Device added successfully.</p>
-    {% endif %}
-
-    {% if form_errors %}
-        {{ form_errors }}
-    {% endif %}
-    <form method="post" class="my_form_style">
+<div class="overlay" id="loading" style="display: none;">
+    <div class="overlay-content">
+        <div class="spinner">
+            <div class="bounce1"></div>
+            <div class="bounce2"></div>
+        </div>
+    </div>
+</div>
+<form method="post" class="my_form_style">
     {% csrf_token %}>
         {% csrf_token %}
 
@@ -114,72 +164,84 @@
             </tr>
             </table>
     </div>
+    <button type="submit" class="mybutton offset-3">Create New Device</button>
+</form>
+<script>
+        const siteSelect = document.querySelector('#id_site');
+        const locationRow = document.querySelector('#location-row');
+        const racksRow = document.querySelector('#racks-row');
+        const locationSelect = document.querySelector('#id_location');
+        const racksSelect = document.querySelector('#id_racks');
+        const locationErrors = document.querySelector('#location-errors');
 
-<br>
-        <button type="submit" class="mybutton offset-3">Create New Device</button>
-    </form>
-    <script>
-            const siteSelect = document.querySelector('#id_site');
-            const locationRow = document.querySelector('#location-row');
-            const racksRow = document.querySelector('#racks-row');
-            const locationSelect = document.querySelector('#id_location');
-            const racksSelect = document.querySelector('#id_racks');
-            const locationErrors = document.querySelector('#location-errors');
-
-            siteSelect.addEventListener('change', () => {
-                const siteId = siteSelect.value;
-                fetch(`/plugins/fast_add_device/get_location/?site_id=${siteId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.location.length > 0) {
-                            locationRow.style.display = 'table-row';
-                            locationRow.style.fontFamily = 'Arial, sans-serif';
-                            locationSelect.innerHTML = '';
-                            locationErrors.innerHTML = '';
-                            data.location.forEach(location => {
-                                const option = document.createElement('option');
-                                option.value = location.id;
-                                option.textContent = location.name;
-                                locationSelect.appendChild(option);
-                                locationSelect.classList.add('offset-1');
-                            });
-                            locationSelect.classList.add('my_form_style')
-                        } else {
-                            locationRow.style.display = 'none';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error while getting data for location:', error);
+        siteSelect.addEventListener('change', () => {
+            const siteId = siteSelect.value;
+            fetch(`/plugins/fast_add_device/get_location/?site_id=${siteId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.location.length > 0) {
+                        locationRow.style.display = 'table-row';
+                        locationRow.style.fontFamily = 'Arial, sans-serif';
+                        locationSelect.innerHTML = '';
+                        locationErrors.innerHTML = '';
+                        data.location.forEach(location => {
+                            const option = document.createElement('option');
+                            option.value = location.id;
+                            option.textContent = location.name;
+                            locationSelect.appendChild(option);
+                            locationSelect.classList.add('offset-1');
+                        });
+                        locationSelect.classList.add('my_form_style')
+                    } else {
                         locationRow.style.display = 'none';
-                        locationErrors.innerHTML = 'Error loading locations';
-                    });
-            });
-            locationSelect.addEventListener('change', () => {
-                const selectedLocationId = locationSelect.value;
-                const url = `/plugins/fast_add_device/get_racks/?location_id=${selectedLocationId}`;
-                console.log('Request URL:', url);
-                fetch(`/plugins/fast_add_device/get_racks/?location_id=${selectedLocationId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                       if (data.racks.length > 0) {
-                            racksRow.style.display = 'table-row';
-                            racksRow.style.fontFamily = 'Arial, sans-serif';
-                            racksSelect.innerHTML = '';
-                            data.racks.forEach(racks => {
-                                const option = document.createElement('option');
-                                option.value = racks.id;
-                                option.textContent = racks.name;
-                                racksSelect.appendChild(option);
-                            });
-                            racksSelect.classList.add('my_form_style')
-                       } else {
-                            racksRow.style.display = 'none';
-                       }
+                    }
                 })
-                     .catch(error => console.error('Error while getting data for racks:', error));
-            });
+                .catch(error => {
+                    console.error('Error while getting data for location:', error);
+                    locationRow.style.display = 'none';
+                    locationErrors.innerHTML = 'Error loading locations';
+                });
+        });
+        locationSelect.addEventListener('change', () => {
+            const selectedLocationId = locationSelect.value;
+            const url = `/plugins/fast_add_device/get_racks/?location_id=${selectedLocationId}`;
+            console.log('Request URL:', url);
+            fetch(`/plugins/fast_add_device/get_racks/?location_id=${selectedLocationId}`)
+                .then(response => response.json())
+                .then(data => {
+                   if (data.racks.length > 0) {
+                        racksRow.style.display = 'table-row';
+                        racksRow.style.fontFamily = 'Arial, sans-serif';
+                        racksSelect.innerHTML = '';
+                        data.racks.forEach(racks => {
+                            const option = document.createElement('option');
+                            option.value = racks.id;
+                            option.textContent = racks.name;
+                            racksSelect.appendChild(option);
+                        });
+                        racksSelect.classList.add('my_form_style')
+                   } else {
+                        racksRow.style.display = 'none';
+                   }
+            })
+                 .catch(error => console.error('Error while getting data for racks:', error));
+        });
 
-    </script>
+</script>
+<script>
+    let formSubmitted = false;
+
+    document.addEventListener('submit', function(event) {
+        formSubmitted = true;
+        document.getElementById('loading').style.display = 'block';
+    });
+
+    window.addEventListener('beforeunload', function(event) {
+        if (!formSubmitted) {
+            document.getElementById('loading').style.display = 'none';
+        }
+    });
+</script>
 
 
 
