@@ -1,13 +1,13 @@
 
 
-
+#external imports
 from concurrent.futures import ThreadPoolExecutor
 import functools
 import pynetbox
 import csv
 from io import TextIOWrapper
 
-
+#internal imports
 from .preparing import CONNECT_PREPARE,CSV_PARSE
 from .nb_exec.add_device import ADD_NB
 from .nb_exec.add_device_from_csv import ADD_NB_CSV
@@ -27,10 +27,10 @@ from .device_types.qtech import QTECH_CONN
 
 
 
-class CORE():
+class CORE():#main class of plugin
 
         """
-        Core of plugin for analyze data and make decision
+        Core of plugin for analyze data and make decisions
         """
 
         def __init__(self, **kwargs):
@@ -38,29 +38,29 @@ class CORE():
             Initialize the values
             """
 
-        def add_edit_plugin(self,**kwargs):
+        def add_edit_plugin(self,**kwargs):#method for make tasks in "add" and "edit" parts of pligin
             print("<<< Start core_exec.py >>>")
             ####call function for preparing data for connection to device
             if kwargs['purpose_value'] == 'add' and kwargs['data']['add']['management_status'] == 1:
                 call = CONNECT_DEVICE()
-                prep = call.add_preparing(**kwargs)
+                prep = call.add_preparing(**kwargs)#prepare data for connect to device
                 print("<<< Start core_exec.py >>>")
                 call = CONNECT_DEVICE()
-                conn_data = call.connection_exec(**prep)
+                conn_data = call.connection_exec(**prep)#connection executing to target device, parse and prepare data for adding to netbox
                 print("<<< Start core_exec.py >>>")
             elif kwargs['purpose_value'] == 'edit':
                 call = EXTRACT_NB()
-                extract = call.extract_for_edit(**kwargs)
+                extract = call.extract_for_edit(**kwargs)#extract all data about recieved device from netbox
                 if extract[0] == False:
                     return [False, extract[1]]
                 elif extract[0] == True:
                     extract = extract[1]
                 print("<<< Start core_exec.py >>>")
                 call = CONNECT_DEVICE()
-                prep = call.edit_preparing(**extract)
+                prep = call.edit_preparing(**extract)#prepare data for connect to device
                 print("<<< Start core_exec.py >>>")
                 call = CONNECT_DEVICE()
-                conn_data = call.connection_exec(**prep)
+                conn_data = call.connection_exec(**prep)#connection executing to target device, parse and prepare data for next tasks
                 print("<<< Start core_exec.py >>>")
             else:
                 return [False,None]
@@ -68,19 +68,19 @@ class CORE():
 
             if kwargs['purpose_value'] == 'add':
                 call = ADD_NB()
-                result = call.add_device(**conn_data)
+                result = call.add_device(**conn_data)#add device to netbox
                 print("<<< Start core_exec.py >>>")
             elif kwargs['purpose_value'] == 'edit':
                 call = PARSE_DATA()
-                diff = call.compare_diff_for_edit(**conn_data)
+                diff = call.compare_diff_for_edit(**conn_data)#compare differents between extracted data fro netbox and collected from connection to device
                 print("<<< Start core_exec.py >>>")
                 if diff['data']['add']['stack_enable'] == True:
                         call = EDIT_NB()
-                        result = call.edit_vc(**diff)
+                        result = call.edit_vc(**diff)#edit device, but that is stack , this devices will be delete and add for new then
                         print("<<< Start core_exec.py >>>")
                 elif diff['data']['add']['stack_enable'] == False:
                         call = EDIT_NB()
-                        result = call.edit_device(**diff)
+                        result = call.edit_device(**diff)# edit device , only changed data will be edit
                         print("<<< Start core_exec.py >>>")
                 else:
                     result = [False, None]
@@ -88,19 +88,24 @@ class CORE():
                 result = [False,None]
             return result
 
+        def add_offline(self, **kwargs):
+            print("<<< Start core_exec.py >>>")
+            call = ADD_NB()
+            result = call.add_device(**kwargs)
+            return result
 
-        def add_csv(self,csv_file):
+        def add_csv(self,csv_file): #method for add ,multiple devices by csv file
             print("<<< Start core_exec.py >>>")
             list_bad_result = []
             list_success_result = []
-            csv_content = TextIOWrapper(csv_file, encoding='cp866')
+            csv_content = TextIOWrapper(csv_file, encoding='cp866')#encode in specific format because in csv file might be latin characters
             csv_reader = csv.DictReader(csv_content)
             list_for_connect = []
-            call = CSV_PARSE()
+            call = CSV_PARSE()#consider instance of class for recieve some data from netbox, parsing it and prepare data for connection to devices
             my_list = []
             for row in csv_reader:
                 my_list.append(row)
-            with ThreadPoolExecutor(max_workers=30) as executor:
+            with ThreadPoolExecutor(max_workers=30) as executor:#use multiple stream for quicker get and parse data
                 partial_func = functools.partial(call.find_out_csv_values)
                 for data in executor.map(partial_func, my_list):
                     list_for_connect.append(data)
@@ -109,8 +114,8 @@ class CORE():
             for r in list_bad:
                 list_bad_result.append(str(r['data']['add']['primary_ip']))
             list_after_conn = []
-            call = CONNECT_DEVICE()
-            with ThreadPoolExecutor(max_workers=30) as executor:
+            call = CONNECT_DEVICE()#consider istance of class for connection to devices
+            with ThreadPoolExecutor(max_workers=30) as executor:#use multiple stream for quicker get and parse data from connection to devices
                 partial_func = functools.partial(call.connection_csv_exec)
                 for data in executor.map(partial_func, list_for_connect):
                     list_after_conn.append(data)
@@ -128,12 +133,12 @@ class CORE():
                     result = call.check_exist_devices(list_devices_name, l)
                     data = result['data']['add']
                     if data['exist_device'] == True:
-                        list_bad_result.append(data['device_name'])
+                        list_bad_result.append(data['device_name'])#check which device already exist in netbox and add it in bad list for report
                     elif data['exist_device'] == False:
-                        update_list_after_connect.append(result)
+                        update_list_after_connect.append(result)#prepare list which include devices for add
                 for l in update_list_after_connect:
                     call = ADD_NB_CSV()
-                    result = call.add_device_csv(**l)
+                    result = call.add_device_csv(**l)#add to netbox
                     if result[0] == False:
                         pass
                     elif result[0] == True:
@@ -142,23 +147,7 @@ class CORE():
 
 
 
-"""
-with ThreadPoolExecutor(max_workers=30) as executor:
-    partial_func = functools.partial(call.add_device_csv)
-    result = executor.map(partial_func, list_after_conn)
-    for r in result:
-        if r[0] == False:
-            list_bad_result.append(r[1])
-        elif r[0] == True:
-            list_success_result.append(r[1])
-return [True,[list_bad_result,list_success_result]]
-"""
-
-
-
-
-
-class CONNECT_DEVICE():
+class CONNECT_DEVICE():#func for parse and prepare data for connection and others tasks
 
         """
         Class for prepare data before connection to device
@@ -249,7 +238,7 @@ class CONNECT_DEVICE():
             return kwargs
 
 
-        def connection_exec(self, **kwargs):
+        def connection_exec(self, **kwargs):# method for consider and execute connection to devices
             print("<<< Start core_exec.py >>>")
 
             platform_mappings = {
@@ -282,7 +271,8 @@ class CONNECT_DEVICE():
                     return [False, None]
 
 
-        def connection_csv_exec(self, kwargs):
+        def connection_csv_exec(self, kwargs):# method for consider and execute connection to devices for
+            # csv part of lugin , so this another method because call via mutilple stream method
             print("<<< Start core_exec.py >>>")
 
             platform_mappings = {
@@ -324,7 +314,7 @@ class PARSE_DATA():
             """
             Initialize the values
             """
-        def compare_diff_for_edit(self,**kwargs):
+        def compare_diff_for_edit(self,**kwargs):#method for parse and make diff dictionary for get difference
             print("<<< Start core_exec.py >>>")
             new_values = {}
             diff_data = kwargs['data']['diff']

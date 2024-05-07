@@ -19,7 +19,7 @@ class CONNECT_PREPARE():
                         Initialize the values
                         """
 
-        def check_ssh(self, **kwargs):
+        def check_ssh(self, **kwargs):# func for check ssh or telnet - connections method
             ip_conn = kwargs['ip_conn']
             socket.setdefaulttimeout(1)
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -48,7 +48,7 @@ class CONNECT_PREPARE():
             sock.close()
             return scheme
 
-        def template_conn(self, **kwargs):
+        def template_conn(self, **kwargs):# method for make template for connection via netmiko
             print("<<< Start preparing.py >>>")
             ip_conn = kwargs['ip_conn']
             conn_scheme = kwargs['conn_scheme']
@@ -98,7 +98,7 @@ class CSV_PARSE():
         Initialize the values
         """
 
-    def find_out_csv_values(self,row):
+    def find_out_csv_values(self,row):  #parse data from csv row and prepare it for connection
         print("<<< Start preparing.py >>>")
         #csv_content = TextIOWrapper(csv_file, encoding='cp1251')
         #csv_reader = csv.DictReader(csv_content)
