@@ -1,3 +1,5 @@
+
+
 {% extends 'base/layout.html' %}
 
 {% load static %}
@@ -6,6 +8,15 @@
   <meta charset="UTF-8">
   <title>{% block title %}{% endblock %}</title>
   <style>
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+    }
     .my_form_style select {
         border: 1px solid #555;
         border-radius: 5px;
@@ -73,25 +84,20 @@
     }
   </style>
 </head>
-
 <h2 class="offset-3">Choose the CSV file to import devices</h2>
-<br>
-
+<div class="overlay" id="loading" style="display: none;">
+    <div class="overlay-content">
+        <div class="spinner">
+            <div class="bounce1"></div>
+            <div class="bounce2"></div>
+        </div>
+    </div>
+</div>
 <form id="uploadForm" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form }}
-
-    <br>
     <button type="submit" class="mybutton offset-3">Import and Create</button>
 </form>
-
-<div id="loading" style="display: none;">
-    <div class="spinner">
-        <div class="bounce1"></div>
-        <div class="bounce2"></div>
-    </div>
-</div>
-
 <script>
     let formSubmitted = false;
 
@@ -108,3 +114,5 @@
 </script>
 
 {% endblock %}
+
+

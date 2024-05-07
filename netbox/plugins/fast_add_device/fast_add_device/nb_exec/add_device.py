@@ -54,7 +54,7 @@ class ADD_NB():
 
             if stack == False:
                 try:
-                    self.nb.dcim.devices.create(
+                    self.nb.dcim.devices.create(#add main form of device
                         name=data['device_name'],
                         status=mgmt.lower(),
                         site=data['site'],
@@ -72,7 +72,7 @@ class ADD_NB():
                 time.sleep(1)
                 id_device = self.nb.dcim.devices.get(name=data["device_name"])
                 try:
-                    self.nb.dcim.interfaces.create(
+                    self.nb.dcim.interfaces.create(#add interface and belong it to device which created before
                         device=id_device.id,
                         name=data["interface_name"],
                         type=self.type_of_interface,
@@ -85,7 +85,7 @@ class ADD_NB():
                 interface = self.nb.dcim.interfaces.get(name=data["interface_name"], device_id=id_device.id)
                 interface_id = interface['id']
                 try:
-                    self.nb.ipam.ip_addresses.create(
+                    self.nb.ipam.ip_addresses.create(#add ip_address and belong it to interface which created before
                         address=data['primary_ip'],
                         status=self.status,
                         assigned_object_type=self.aobjt,
@@ -94,7 +94,7 @@ class ADD_NB():
                 except Exception as err:
                     print(f'Error for create an ip_address {err}')
                     return [False, err]
-                time.sleep(1)
+                time.sleep(1)#next will try to update some fields for device
                 try:
                     sn = data['list_serial_device'][0]['sn_number']
                     id_device.update({'serial': sn})
@@ -112,6 +112,10 @@ class ADD_NB():
                     id_device.update({'custom_fields':{'MAP_Group':data['map_resource_group']}})
                 else:
                     pass
+                if data['name_of_establishment'] != None:
+                    id_device.update({'custom_fields': {'Name_of_Establishment': data['name_of_establishment']}})
+                else:
+                    pass
                 try:
                     id_device.update({'primary_ip4': {'address': data['primary_ip']}})
                 except Exception as err:
@@ -121,7 +125,7 @@ class ADD_NB():
                     print(f'Succesfull create and update device - [ "{data["device_name"]}" ] and send to telegram chat')
                     message = (f'Netbox.handler[ "Event_Add Device" ]\n Device Name - [ "{data["device_name"]}" ] '
                                f'\n ip_address - [ "{data["primary_ip"]}" ] \n Time: [ "{datetime.datetime.now()}" ]')
-                    sender = tg_bot(message)
+                    sender = tg_bot(message)#send message to TG about succesfull event
                     sender.tg_sender()
                 return [True, data["device_name"]]
             elif stack == True:

@@ -118,6 +118,10 @@ class ADD_NB_CSV():
                     id_device.update({'custom_fields':{'MAP_Group':data['map_resource_group']}})
                 else:
                     pass
+                if data['name_of_establishment'] != None:
+                    id_device.update({'custom_fields': {'Name_of_Establishment': data['name_of_establishment']}})
+                else:
+                    pass
                 try:
                     id_device.update({'primary_ip4': {'address': data['primary_ip']}})
                 except Exception as err:

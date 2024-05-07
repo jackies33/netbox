@@ -176,7 +176,8 @@ class JUNIPER_CONN():
                             'rack': data['rack'],
                             'stack_enable': data['stack_enable'],
                             'tg_resource_group': data['tg_resource_group'],
-                            'map_resource_group': data['map_resource_group']
+                            'map_resource_group': data['map_resource_group'],
+                            'name_of_establishment': data['name_of_establishment']
                         }
                     )
 
@@ -263,18 +264,29 @@ class JUNIPER_CONN():
                                     list_serial_device.append(
                                         {'member_id': 0, 'sn_number': member_serial_number, 'master': False})
                                 ###update data dict for adding
-                                data_for_add.update({'site': data['site'], 'location': data['location'],
-                                                     'tenants': data['tenants'], 'device_role': data['device_role'],
-                                                     'platform': data['platform'], 'primary_ip': data['primary_ip'],
-                                                     'device_name': device_name, 'manufacturer': manufacturer,
-                                                     'device_type': device_type[0], 'interface_name': interface_name,
-                                                     'list_serial_device': list_serial_device,
-                                                     'conn_scheme': data['conn_scheme'],
-                                                     'management_status': data['management_status'],
-                                                     'rack': data['rack'], 'stack_enable': data['stack_enable'],
-                                                     'resource_group': data['resource_group']
+                                data_for_add.update(
+                                    {
+                                        'site': data['site'],
+                                        'location': data['location'],
+                                        'tenants': data['tenants'],
+                                        'device_role': data['device_role'],
+                                        'platform': data['platform'],
+                                        'primary_ip': data['primary_ip'],
+                                        'device_name': device_name,
+                                        'manufacturer': manufacturer,
+                                        'device_type': device_type[0],
+                                        'interface_name': interface_name,
+                                        'list_serial_device': list_serial_device,
+                                        'conn_scheme': data['conn_scheme'],
+                                        'management_status': data['management_status'],
+                                        'rack': data['rack'],
+                                        'stack_enable': data['stack_enable'],
+                                        'tg_resource_group': data['tg_resource_group'],
+                                        'map_resource_group': data['map_resource_group'],
+                                        'name_of_establishment': data['name_of_establishment']
+                                    }
+                                )
 
-                                                     })
                                 return kwargs
 
                             except SSHException as err:

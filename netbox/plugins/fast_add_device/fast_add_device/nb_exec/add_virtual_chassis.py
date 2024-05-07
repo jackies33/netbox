@@ -131,6 +131,10 @@ class ADD_NB_VC():
                                     id_device.update({'custom_fields': {'MAP_Group': data['map_resource_group']}})
                                 else:
                                     pass
+                                if data['name_of_establishment'] != None:
+                                    id_device.update({'custom_fields': {'Name_of_Establishment': data['name_of_establishment']}})
+                                else:
+                                    pass
                                 try:
                                     id_device.update({'serial': sn_numb})
                                 except Exception as err:
