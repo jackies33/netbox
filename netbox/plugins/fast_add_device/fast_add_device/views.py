@@ -178,7 +178,7 @@ class Add_Sites_CSV_View(generic.TemplateView):
             if form.is_valid():
                 csv_file = request.FILES['csv_file']
                 result = CORE()
-                connecting = result.add_csv(csv_file)
+                connecting = result.add_csv_sites(csv_file)
                 if connecting[0] == True:
                     bad = connecting[1][0]
                     success = connecting[1][1]
