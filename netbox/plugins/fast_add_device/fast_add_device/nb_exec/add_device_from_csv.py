@@ -33,6 +33,8 @@ class ADD_NB_CSV():
             Initialize the values
             """
 
+
+
         def add_device_csv(self,**kwargs):
             print("<<< Start add_device.py >>>")
             # print('this is add_device.py!!!!')
@@ -143,6 +145,22 @@ class ADD_NB_CSV():
                     elif result_stack[0] == False:
                         print(result_stack[1])
                         return [False, result_stack[1]]
+
+        def add_sites_csv(self, **kwargs):
+                print("<<< Start add_device.py >>>")
+                # print('this is add_device.py!!!!')
+                data = kwargs['data']['add']
+                try:
+                    self.nb.dcim.sites.create(
+                        name=data["name"],
+                        slug=data["slug"],
+                        region=data["region"],
+                        physical_address=data["physical_address"]
+                    )
+                    return [True,data["name"]]
+                except Exception as err:
+                    print(f'{err}')
+                    return [False, data["name"]]
 
 
 if __name__ == '__main__':

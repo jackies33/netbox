@@ -146,6 +146,34 @@ class CORE():#main class of plugin
             return [True, [list_bad_result, list_success_result]]
 
 
+        def add_csv_sites(self,csv_file): #method for add ,multiple devices by csv file
+            print("<<< Start core_exec.py >>>")
+            list_bad_result = []
+            list_success_result = []
+            csv_content = TextIOWrapper(csv_file, encoding='cp866')#encode in specific format because in csv file might be latin characters
+            csv_reader = csv.DictReader(csv_content)
+            list_for_add = []
+            call = CSV_PARSE()#consider instance of class for recieve some data from netbox, parsing it and prepare data for connection to devices
+            my_list = []
+            for row in csv_reader:
+                my_list.append(row)
+            with ThreadPoolExecutor(max_workers=30) as executor:  # use multiple stream for quicker get and parse data
+                partial_func = functools.partial(call.csv_parse_sites())
+                for data in executor.map(partial_func, my_list):
+                    list_for_add.append(data)
+            list_bad_result = []
+            list_success_result = []
+            for l in list_for_add:
+                call = ADD_NB_CSV()
+                result = call.add_sites_csv(**l)  # add to netbox
+                if result[0] == False:
+                    list_bad_result.append(result[1])
+                elif result[0] == True:
+                    list_success_result.append(result[1])
+            return [True, [list_bad_result, list_success_result]]
+
+
+
 
 class CONNECT_DEVICE():#func for parse and prepare data for connection and others tasks
 

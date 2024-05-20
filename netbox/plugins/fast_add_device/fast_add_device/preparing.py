@@ -4,6 +4,8 @@
 import socket
 import pynetbox
 import telnetlib
+from unidecode import unidecode
+import re
 
 
 from .my_pass import mylogin , mypass ,rescue_login, rescue_pass,netbox_url,netbox_api_token
@@ -202,6 +204,32 @@ class CSV_PARSE():
                    }
         #my_list.append(my_dict)
         return my_dict
+
+    def csv_parse_sites(self, row):
+        name = row["name"]
+        slug = self.create_slug(name)
+        nb = pynetbox.api(url=netbox_url, token=netbox_api_token)
+        nb.http_session.verify = False
+        region = int(nb.dcim.regions.get(name=row['region']).id)
+        my_dict = {'purpose_value': 'add_site',
+                   'data': {
+                       'edit': {},
+                       'add': {
+                           'name': name,
+                           'slug': slug,
+                           'region': region,
+                           'physical_address': row['physical_address'],
+                       },
+                       'diff': {}
+                   }
+                   }
+        return my_dict
+    def create_slug(self, name):
+        name_transliterated = unidecode(name)
+        name_lower = name_transliterated.lower()
+        name_cleaned = re.sub(r'[^a-z0-9]+', '-', name_lower)
+        slug = name_cleaned.strip('-')
+        return slug
 
     def check_exist_devices(self, exist_devices, new_devices):
         data = new_devices['data']['add']
