@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='fast_add_device',
-    version='0.2.1',
+    version='2.1.5',
     description='Scan device by ip',
     long_description='Scan device by ip for add new devices',
     long_description_content_type='text',
