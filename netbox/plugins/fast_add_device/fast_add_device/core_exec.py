@@ -218,8 +218,8 @@ class CORE():#main class of plugin
                     list_success_result.append(result[1])
                     print(result[0], result[1], result[2])
             message = (
-                f'Netbox.handler[ "Event_Add Sites from csv file" ]\n Successfull added sites list - [ {list_success_result} ] '
-                f'\n wasnt added sites list - [ {list_bad_result} ]\n Time: [ "{datetime.datetime.now()}" ]')
+                f'Netbox.handler[ "Event_Add Prefixes from csv file" ]\n Successfull added prefixes list - [ {list_success_result} ] '
+                f'\n wasnt added prefixes list - [ {list_bad_result} ]\n Time: [ "{datetime.datetime.now()}" ]')
             sender = tg_bot(message)
             sender.tg_sender()
             return [True, [list_bad_result, list_success_result]]

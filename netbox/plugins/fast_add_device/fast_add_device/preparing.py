@@ -311,7 +311,7 @@ class CSV_PARSE():
                 return [True,name]
         return [False,name]
 
-    def check_exist_prefixes(self,**kwargs):
+    def check_exist_prefixes(self, kwargs):
         nb = netbox_api_instance.get_instance()
         tenant_group = nb.tenancy.tenant_groups.get(name=kwargs['tenant_group_name'])
         if tenant_group == None:
@@ -360,9 +360,22 @@ class CSV_PARSE():
                             "tenant_group": tenant_group.id,
                             'import_targets': [rt.id],
                         })
-                        prefix.update({'vrf': vrf})
+                        vrf = nb.ipam.vrfs.get(name=kwargs['vrf_name'])
+                        prefix.update({'vrf': vrf.id})
+                if prefix.role == None:
+                    role = nb.ipam.roles.get(name=kwargs['role_name'])
+                    if role == None:
+                        role_data = {
+                            'name': kwargs['role_name'],
+                            'slug': self.create_slug(kwargs['role_name']),
+                            'weight': kwargs['role_weight']
+                        }
+                        nb.ipam.roles.create(role_data)
+                        role = nb.ipam.roles.get(name=kwargs['role_name'])
+                    prefix.update({'role': role.id})
                 if prefix.vlan == None:
-                    vlan = nb.ipam.vlans.get(name=kwargs['vlan_group'])
+                    vlan = nb.ipam.vlans.get(name=kwargs['vlan_name'])
+                    role = nb.ipam.roles.get(name=kwargs['role_name'])
                     if vlan == None:
                         vlan_group = nb.ipam.vlan_groups.get(name=kwargs['vlan_group'])
                         vlan_data = {
@@ -371,22 +384,11 @@ class CSV_PARSE():
                             "group": vlan_group.id,
                             "tenant": tenant.id,
                             "status": "active",
-                            'role': kwargs['role_name']
+                            'role': role.id
                         }
                         nb.ipam.vlans.create(vlan_data)
                         vlan = nb.ipam.vlans.get(name=kwargs['vlan_name'])
                     prefix.update({'vlan': vlan.id})
-                if prefix.role == None:
-                    role = nb.ipam.roles.get(name=kwargs['role_name'])
-                    if role == None:
-                        role_data = {
-                            'name': kwargs['role_name'],
-                            'slug': self.create_slug(kwargs['role_name']),
-                            'weight': int(kwargs['role_weight_row'])
-                        }
-                        nb.ipam.roles.create(role_data)
-                        role = nb.ipam.roles.get(name=kwargs['role_name'])
-                    prefix.update({'role': role.id})
                 if prefix.site == None:
                     site = nb.dcim.sites.get(name=kwargs['site_name'])
                     if site == None:
@@ -394,17 +396,19 @@ class CSV_PARSE():
                             "name": kwargs['site_name'],
                             'slug': self.create_slug(kwargs['site_name']),
                         }
+
                         nb.dcim.sites.create(site_data)
                     prefix.update({'site': site.id})
                 if prefix.tenant == None:
                     prefix.update({'tenant': tenant.id})
-                return ["exist",kwargs['prefix_name']]
+                return ["exist", kwargs['prefix_name']]
             except AttributeError as err:
                 print(err)
+                return [False, kwargs['prefix_name'], err]
             except Exception as err:
                 print(err)
-            return ["exist",kwargs['prefix_name']]
-        else: # if prefix isn't exist , we would check all dependecies refers to prefix and update or create it
+                return [False, kwargs['prefix_name'], err]
+        else:  # if prefix isn't exist , we would check all dependecies refers to prefix and update or create it
             try:
                 vrf = nb.ipam.vrfs.get(name=kwargs['vrf_name'])
                 if vrf != None:
@@ -432,7 +436,16 @@ class CSV_PARSE():
                         'import_targets': [rt.id],
                     })
                     vrf = nb.ipam.vrfs.get(name=kwargs['vrf_name'])
-                vlan = nb.ipam.vlans.get(name=kwargs['vlan_group'])
+                role = nb.ipam.roles.get(name=kwargs['role_name'])
+                if role == None:
+                    role_data = {
+                        'name': kwargs['role_name'],
+                        'slug': self.create_slug(kwargs['role_name']),
+                        'weight': kwargs['role_weight']
+                    }
+                    nb.ipam.roles.create(role_data)
+                    role = nb.ipam.roles.get(name=kwargs['role_name'])
+                vlan = nb.ipam.vlans.get(name=kwargs['vlan_name'])
                 if vlan == None:
                     vlan_group = nb.ipam.vlan_groups.get(name=kwargs['vlan_group'])
                     vlan_data = {
@@ -441,19 +454,10 @@ class CSV_PARSE():
                         "group": vlan_group.id,
                         "tenant": tenant.id,
                         "status": "active",
-                        'role': kwargs['role_name']
+                        'role': role.id
                     }
                     nb.ipam.vlans.create(vlan_data)
                     vlan = nb.ipam.vlans.get(name=kwargs['vlan_name'])
-                role = nb.ipam.roles.get(name=kwargs['role_name'])
-                if role == None:
-                    role_data = {
-                        'name': kwargs['role_name'],
-                        'slug': self.create_slug(kwargs['role_name']),
-                        'weight': int(kwargs['role_weight_row'])
-                    }
-                    nb.ipam.roles.create(role_data)
-                    role = nb.ipam.roles.get(name=kwargs['role_name'])
                 site = nb.dcim.sites.get(name=kwargs['site_name'])
                 if site == None:
                     site_data = {
@@ -462,12 +466,28 @@ class CSV_PARSE():
                     }
                     nb.dcim.sites.create(site_data)
                     site = nb.dcim.sites.get(name=kwargs['site_name'])
-                return ["not exist",kwargs['prefix_name']]
+                my_dict = {'purpose_value': 'add_prefixes',
+                           'data': {
+                               'edit': {},
+                               'add': {
+                                   "prefix": kwargs['prefix_name'],
+                                   "vrf": vrf.id,
+                                   "tenant": tenant.id,
+                                   "site": site.id,
+                                   "vlan": vlan.id,
+                                   "role": role.id,
+                               },
+                               'diff': {}
+                           }
+                           }
+                return ["not exist", my_dict]
             except AttributeError as err:
                 print(err)
+                return [False, kwargs['prefix_name'], err]
             except Exception as err:
                 print(err)
-            return ["not exist",kwargs['prefix_name']]
+                return [False, kwargs['prefix_name'], err]
+
 
 
 
