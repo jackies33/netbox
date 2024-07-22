@@ -8,7 +8,15 @@ menu_items = (
     ),
     PluginMenuItem(
         link='plugins:fast_add_device:add_device_csv',
-        link_text='CSV_import',
+        link_text='Devices_CSV_import',
+    ),
+    PluginMenuItem(
+        link='plugins:fast_add_device:add_sites_csv',
+        link_text='Sites_CSV_import',
+    ),
+    PluginMenuItem(
+        link='plugins:fast_add_device:add_prefix_csv',
+        link_text='Prefixes_CSV_import',
     ),
     PluginMenuItem(
         link='plugins:fast_add_device:add_device_offline',

@@ -1,0 +1,19 @@
+
+{% extends 'base/layout.html' %}
+{% load static %}
+{% load form_helpers %}
+{% block content %}
+<h2 class="offset-3"></h2>
+<br>
+    {% if response %}
+         <div style="text-align: center">
+             <p class="offset-3" style="color:green;" > Sites from csv  <<<  {{ success }}  >>>  has added sucessfull. </p>
+             <p class="offset-3" style="color:red;" > Sites from csv  <<<  {{ bad }}  >>>  not added. </p>
+         </div>
+
+    {% endif %}
+<br>
+<div style="text-align: center">
+  <button><a href="{% url 'plugins:fast_add_device:add_sites_csv' %}">One more csv import</a></button>
+</div>
+{% endblock %}

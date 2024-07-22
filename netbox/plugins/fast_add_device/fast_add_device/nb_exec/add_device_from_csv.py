@@ -6,11 +6,9 @@
 ###external pack
 import time
 import pynetbox
-import datetime
 
 
 ##internal pack
-from ..tgbot import tg_bot
 from ..my_pass import netbox_url,netbox_api_token
 from .add_virtual_chassis import ADD_NB_VC
 
@@ -32,6 +30,8 @@ class ADD_NB_CSV():
             """
             Initialize the values
             """
+
+
 
         def add_device_csv(self,**kwargs):
             print("<<< Start add_device.py >>>")
@@ -128,11 +128,7 @@ class ADD_NB_CSV():
                     print(f"in update device  - - - {err}")
                     return [False, data["device_name"]]
                 else:
-                    print(f'Succesfull create and update device - [ "{data["device_name"]}" ] and send to telegram chat')
-                    message = (f'Netbox.handler[ "Event_Add Device" ]\n Device Name - [ "{data["device_name"]}" ] '
-                               f'\n ip_address - [ "{data["primary_ip"]}" ] \n Time: [ "{datetime.datetime.now()}" ]')
-                    sender = tg_bot(message)
-                    sender.tg_sender()
+                    print(f'Succesfull create and update device - [ "{data["device_name"]}" ] ')
                 return [True, data["device_name"]]
             elif stack == True:
                     call = ADD_NB_VC()
@@ -143,6 +139,49 @@ class ADD_NB_CSV():
                     elif result_stack[0] == False:
                         print(result_stack[1])
                         return [False, result_stack[1]]
+
+        def add_sites_csv(self, **kwargs):
+                print("<<< Start add_device.py >>>")
+                # print('this is add_device.py!!!!')
+                data = kwargs['data']['add']
+                try:
+                    self.nb.dcim.sites.create(
+                        name=data["name"],
+                        slug=data["slug"],
+                        region=data["region"],
+                        physical_address=data["physical_address"]
+                    )
+                    return [True,data["name"]]
+                except Exception as err:
+                    try:
+                        slug = (f'{data["slug"]}111')
+                        self.nb.dcim.sites.create(
+                            name=data["name"],
+                            slug=slug,
+                            region=data["region"],
+                            physical_address=data["physical_address"]
+                        )
+                        return [True, data["name"]]
+                    except Exception as err:
+                        print(f'{err}')
+                        return [False, data["name"]]
+
+        def add_prefixes_csv(self, **kwargs):
+                print("<<< Start add_device.py >>>")
+                # print('this is add_device.py!!!!')
+                data = kwargs['data']['add']
+                try:
+                    self.nb.ipam.prefixes.create(
+                        prefix=data['prefix'],
+                        vrf= data['vrf'],
+                        tenant= data['tenant'],
+                        site= data['site'],
+                        vlan= data['vlan'],
+                        role= data['role'],
+                    )
+                    return [True,data["prefix"],None]
+                except Exception as err:
+                        return [False, data["prefix"],err]
 
 
 if __name__ == '__main__':
