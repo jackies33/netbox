@@ -49,6 +49,9 @@ class MIKROTIK_CONN():
                         serial_output = net_connect.send_command('system routerboard print', delay_factor=.5)
                         device_type = re.findall(r'board-name:\s+\S+', device_type_output)[0].split("board-name:")[1].split()[0]
                         device_name = re.findall(r'set name=\S+', device_name_output)[0].split('set name=')[1]
+                        #
+                        #device_name1 = re.findall(r'set name=\S+', device_name_output)[0].split('set name=guag-')[1]
+                        #
                         interface_name = re.findall(rf"\d+\s+{ip_conn}/\d+\s+\S+\s+\S+", ip_address_output)[0].split()[-1]
                         serial_number = re.findall(r'serial-number:\s+\S+', serial_output)[0].split()[-1]
                         manufacturer = 'MikroTik'
@@ -56,6 +59,11 @@ class MIKROTIK_CONN():
                         print("<<< Start mikrotik.py >>>")
                         list_serial_device = []
                         list_serial_device.append({'member_id': 0, 'sn_number': serial_number, 'master': False})
+                        #
+                        #generic_prompt = r'.*[>#]'
+                        #device_name = f"kag-{device_name1}"
+                        #net_connect.send_command(f'system/identity/set name=kag-{device_name1}', delay_factor=.5,expect_string=generic_prompt)
+                        #
                         net_connect.disconnect()
                         data_for_add.update(
                             {

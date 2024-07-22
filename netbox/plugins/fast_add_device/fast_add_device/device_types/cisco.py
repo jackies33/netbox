@@ -48,9 +48,7 @@ class CISCO_CONN():
                         output_main = net_connect.send_command('show version', delay_factor=.5)
                         device_name = re.findall(f"\S+ uptime is", output_main)[0].split("uptime is")[0].strip()
                         manufacturer = 'Cisco Systems'
-                        device_type = classifier_device_type(manufacturer,
-                                                             re.findall(f"^cisco \S+", output_main, re.MULTILINE)[
-                                                                 0].split("cisco")[1].strip())
+                        device_type = classifier_device_type(manufacturer,re.findall(f"^cisco \S+", output_main, re.MULTILINE)[0].split("cisco")[1].strip())
                         print("<<< Start cisco.py >>>")
                         output_interface_name = net_connect.send_command(
                             f'show ip interface brief | include {ip_conn}', delay_factor=.5)
@@ -60,30 +58,39 @@ class CISCO_CONN():
                         list_serial_device = []
                         if stack_enable == True:
                             output_switch = net_connect.send_command('show switch', delay_factor=.5)
-                            member_output = re.findall(r"\d\s+Member \S+", output_switch)
-                            master_output = re.findall(r"\d\s+Master \S+", output_switch)[0]
+                            master_output = re.findall(r"\d\s+Active\s+\S+", output_switch)[0]
+                            member_output = re.findall(r"\d\s+Standby\s+\S+", output_switch)
                             for member in member_output:
-                                member_id = member.replace(" ", "").split('Member')[0]
+                                # print(member)
+                                member_id = member.split('Standby')[0]
+                                member_id = member_id.strip()
+                                member_sn = member.split('Standby')[1]
+                                member_sn = member_sn.strip()
+                                # print(member_id,member_sn)
                                 list_serial_device.append(
-                                    {'member_id': member_id, 'sn_number': '',
+                                    {'member_id': member_id, 'sn_number': member_sn,
                                      'master': False})
-
-                            master_id = master_output.replace(" ", "").split('Master')[0]
+                            # print(master)
+                            master_id = master_output.split('Active')[0]
+                            master_id = master_id.strip()
+                            master_sn = master_output.split('Active')[1]
+                            master_sn = master_sn.strip()
+                            # print(master_id, master_sn)
                             list_serial_device.append(
-                                {'member_id': master_id, 'sn_number': '',
+                                {'member_id': master_id, 'sn_number': master_sn,
                                  'master': True})
 
-                            output_inventory = net_connect.send_command('show inventory', delay_factor=.5)
-                            member_output = re.findall(f'^NAME:.+\nPID: {device_type[1]}.+SN: \S+',
-                                                       output_inventory,
-                                                       re.MULTILINE)
-                            for member in member_output:
-                                member_id = re.findall(r'NAME: "\d"', member)[0].split('NAME: "')[1].split('"')[
-                                    0]
-                                member_sn = re.findall(r'SN: \S+', member)[0].split('SN: ')[1]
-                                for l in list_serial_device:
-                                    if l['member_id'] == member_id:
-                                        l['sn_number'] = member_sn
+                           # output_inventory = net_connect.send_command('show inventory', delay_factor=.5)
+                            #member_output = re.findall(f'^NAME:.+\nPID: {device_type[1]}.+SN: \S+',
+                                                       #output_inventory,
+                                                       #re.MULTILINE)
+                            #for member in member_output:
+                            #    member_id = re.findall(r'NAME: "\d"', member)[0].split('NAME: "')[1].split('"')[
+                            #        0]
+                            #    member_sn = re.findall(r'SN: \S+', member)[0].split('SN: ')[1]
+                            #    for l in list_serial_device:
+                            #        if l['member_id'] == member_id:
+                            #            l['sn_number'] = member_sn
 
                         elif stack_enable == False:
                             serial_number = \
@@ -146,15 +153,16 @@ class CISCO_CONN():
                                 list_serial_device = []
                                 if stack_enable == True:
                                     output_switch = net_connect.send_command('show switch', delay_factor=.5)
-                                    member_output = re.findall(r"\d\s+Member \S+", output_switch)
-                                    master_output = re.findall(r"\d\s+Master \S+", output_switch)[0]
+                                    master_output = re.findall(r"\d\s+Active\s+\S+", output_switch)[0]
+                                    member_output = re.findall(r"\d\s+Standby\s+\S+", output_switch)[0]
                                     for member in member_output:
-                                        member_id = member.replace(" ", "").split('Member')[0]
+                                        member = member.strip()
+                                        member_id = member.split('Standby')[0]
                                         list_serial_device.append(
                                             {'member_id': member_id, 'sn_number': '',
                                              'master': False})
-
-                                    master_id = master_output.replace(" ", "").split('Master')[0]
+                                    master = master_output.strip()
+                                    master_id = master.split('Active')[0]
                                     list_serial_device.append(
                                         {'member_id': master_id, 'sn_number': '',
                                          'master': True})

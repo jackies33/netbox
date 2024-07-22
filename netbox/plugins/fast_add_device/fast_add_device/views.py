@@ -194,6 +194,37 @@ class Add_Sites_CSV_View(generic.TemplateView):
         return render(request, self.template_main_csv, {'form': form})
 
 
+class Add_Prefixes_CSV_View(generic.TemplateView):
+    print("<<< Start views.py >>>")
+    template_success = 'fast_add_device/csv_prefix_success.html'
+    template_main_csv = 'fast_add_device/main_csv_prefix.html'
+    template_bad_result = 'fast_add_device/bad_result_csv_prefix.html'
+    form_class = Device_ADD_CSV_PluginForm
+
+    def get(self, request):
+        form = self.form_class
+        return render(request, self.template_main_csv, {'form': form})
+
+    def post(self,request):
+        if request.method == 'POST':
+            form = self.form_class(request.POST, request.FILES)
+            if form.is_valid():
+                csv_file = request.FILES['csv_file']
+                result = CORE()
+                connecting = result.add_csv_sites(csv_file)
+                if connecting[0] == True:
+                    bad = connecting[1][0]
+                    success = connecting[1][1]
+                    return render(request, self.template_success,
+                                  context={'response': "True", 'success': success,'bad':bad}, status=HTTPStatus.CREATED)
+
+                elif connecting[0] == False:
+                    return render(request, self.template_bad_result,
+                                  context={'response': "False", 'connecting': connecting[1]},
+                                  status=HTTPStatus.INTERNAL_SERVER_ERROR)
+        else:
+            form = self.form_class()
+        return render(request, self.template_main_csv, {'form': form})
 
 
 

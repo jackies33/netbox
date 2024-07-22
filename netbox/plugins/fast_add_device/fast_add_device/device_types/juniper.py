@@ -81,6 +81,8 @@ class JUNIPER_CONN():
                                 interface_name = interface_name + unit
                             elif interface_name == 'irb':
                                 interface_name = (f'{interface_name}.{unit}')
+                            elif "em" in interface_name:
+                                interface_name = interface_name
                     if interface_name == '':
                         config = dev.rpc.get_config(filter_xml=etree.XML(f'''
                                                                  <configuration>
@@ -111,6 +113,8 @@ class JUNIPER_CONN():
                                     interface_name = (f'{interface_name}.{unit}')
                                 elif interface_name == "lo0":
                                     interface_name = f"lo{unit}"
+                                elif "em" in interface_name:
+                                    interface_name = interface_name
 
                     else:
                         pass
@@ -295,3 +299,8 @@ class JUNIPER_CONN():
                 except Exception as e:
                     print(f"Error {e}")
                     return [False, e]
+
+
+
+
+

@@ -50,6 +50,7 @@ class ADD_NB_VC():
                       pass
                 elif kwargs['purpose_value'] == 'add':
                     stack_amount = ''
+                    print(data)
                     for member in add_data['list_serial_device']:
                         mem_id = member['member_id']
                         sn_numb = member['sn_number']
@@ -66,7 +67,7 @@ class ADD_NB_VC():
                                 device_type=add_data['device_type'],
                                 primary_ip=add_data['primary_ip'],
                                 tenant=add_data['tenants'],
-                                custom_fields={'Connection_Scheme': str(conn_scheme),'Resource_Group':add_data['resource_group']},
+                                custom_fields={'Connection_Scheme': str(conn_scheme),'TG_Group':add_data['tg_resource_group']},
                             )
                         except Exception as err:
                             print(f'device {add_data["device_name"]} is already done or \n {err}')
