@@ -348,6 +348,8 @@ class CSV_PARSE():
                             vrf.update({'import_targets': [rt.id]})
                         prefix.update({'vrf': vrf})
                     elif vrf == None:
+                        vrf = nb.ipam.vrfs.get(rd=kwargs['vrf_rd'])
+                    if vrf == None:
                         if nb.ipam.route_targets.get(name=kwargs['vrf_rd']) == None:
                             nb.ipam.route_targets.create({"name": kwargs['vrf_rd'],
                                                           "tenant": tenant.id,
@@ -361,7 +363,7 @@ class CSV_PARSE():
                             'import_targets': [rt.id],
                         })
                         vrf = nb.ipam.vrfs.get(name=kwargs['vrf_name'])
-                        prefix.update({'vrf': vrf.id})
+                    prefix.update({'vrf': vrf.id})
                 """
                 if prefix.role == None:
                     role = nb.ipam.roles.get(name=kwargs['role_name'])
@@ -391,7 +393,7 @@ class CSV_PARSE():
                 """
                 if prefix.vlan == None:
                     vlan = nb.ipam.vlans.get(name=kwargs['vlan_name'])
-                    role = nb.ipam.roles.get(name=kwargs['role_name'])
+                    #role = nb.ipam.roles.get(name=kwargs['role_name'])
                     if vlan == None:
                         vlan_group = nb.ipam.vlan_groups.get(name=kwargs['vlan_group'])
                         """
@@ -434,6 +436,9 @@ class CSV_PARSE():
             except AttributeError as err:
                 print(err)
                 return [False, kwargs['prefix_name'], err]
+            except ValueError as err:
+                print(err)
+                return [False, kwargs['prefix_name'], err]
             except Exception as err:
                 print(err)
                 return [False, kwargs['prefix_name'], err]
@@ -452,6 +457,8 @@ class CSV_PARSE():
                         vrf.update({'import_targets': [rt.id]})
                         vrf = nb.ipam.vrfs.get(name=kwargs['vrf_name'])
                 elif vrf == None:
+                    vrf = nb.ipam.vrfs.get(rd=kwargs['vrf_rd'])
+                if vrf == None:
                     if nb.ipam.route_targets.get(name=kwargs['vrf_rd']) == None:
                         nb.ipam.route_targets.create({"name": kwargs['vrf_rd'],
                                                       "tenant": tenant.id,
@@ -465,7 +472,7 @@ class CSV_PARSE():
                         'import_targets': [rt.id],
                     })
                     vrf = nb.ipam.vrfs.get(name=kwargs['vrf_name'])
-                role = nb.ipam.roles.get(name=kwargs['role_name'])
+                #role = nb.ipam.roles.get(name=kwargs['role_name'])
                 """
                 if role == None:
                     print(kwargs['role_name'])
@@ -554,6 +561,9 @@ class CSV_PARSE():
                            }
                 return ["not exist", my_dict]
             except AttributeError as err:
+                print(err)
+                return [False, kwargs['prefix_name'], err]
+            except ValueError as err:
                 print(err)
                 return [False, kwargs['prefix_name'], err]
             except Exception as err:
