@@ -362,29 +362,58 @@ class CSV_PARSE():
                         })
                         vrf = nb.ipam.vrfs.get(name=kwargs['vrf_name'])
                         prefix.update({'vrf': vrf.id})
+                """
                 if prefix.role == None:
                     role = nb.ipam.roles.get(name=kwargs['role_name'])
                     if role == None:
-                        role_data = {
-                            'name': kwargs['role_name'],
-                            'slug': self.create_slug(kwargs['role_name']),
-                            'weight': kwargs['role_weight']
-                        }
-                        nb.ipam.roles.create(role_data)
-                        role = nb.ipam.roles.get(name=kwargs['role_name'])
-                    prefix.update({'role': role.id})
+                        print(kwargs['role_name'])
+                        if kwargs['role_name'] != '':
+                            role_data = {
+                                'name': kwargs['role_name'],
+                                'slug': self.create_slug(kwargs['role_name']),
+                                'weight': kwargs['role_weight']
+                            }
+                            nb.ipam.roles.create(role_data)
+                            role = nb.ipam.roles.get(name=kwargs['role_name'])
+                            if role == None:
+                                role_id = None
+                            else:
+                                role_id = role.id
+                                prefix.update({'role': role_id})
+                        else:
+                            role_id = None
+                    else:
+                        role_id = role.id
+                        prefix.update({'role': role_id})
+                else:
+                    role_id = prefix.role.id
+                    prefix.update({'role': role_id})
+                """
                 if prefix.vlan == None:
                     vlan = nb.ipam.vlans.get(name=kwargs['vlan_name'])
                     role = nb.ipam.roles.get(name=kwargs['role_name'])
                     if vlan == None:
                         vlan_group = nb.ipam.vlan_groups.get(name=kwargs['vlan_group'])
+                        """
+                        if role_id != None:
+                            vlan_data = {
+                                "name": kwargs['vlan_name'],
+                                "vid": kwargs['vlan_id'],
+                                "group": vlan_group.id,
+                                "tenant": tenant.id,
+                                "status": "active",
+                                'role': role_id
+                            }
+                            nb.ipam.vlans.create(vlan_data)
+                            vlan = nb.ipam.vlans.get(name=kwargs['vlan_name'])
+                        elif role_id == None:
+                        """
                         vlan_data = {
                             "name": kwargs['vlan_name'],
                             "vid": kwargs['vlan_id'],
                             "group": vlan_group.id,
                             "tenant": tenant.id,
-                            "status": "active",
-                            'role': role.id
+                            "status": "active"
                         }
                         nb.ipam.vlans.create(vlan_data)
                         vlan = nb.ipam.vlans.get(name=kwargs['vlan_name'])
@@ -437,24 +466,49 @@ class CSV_PARSE():
                     })
                     vrf = nb.ipam.vrfs.get(name=kwargs['vrf_name'])
                 role = nb.ipam.roles.get(name=kwargs['role_name'])
+                """
                 if role == None:
-                    role_data = {
-                        'name': kwargs['role_name'],
-                        'slug': self.create_slug(kwargs['role_name']),
-                        'weight': kwargs['role_weight']
-                    }
-                    nb.ipam.roles.create(role_data)
-                    role = nb.ipam.roles.get(name=kwargs['role_name'])
+                    print(kwargs['role_name'])
+                    if kwargs['role_name'] != '':
+                        role_data = {
+                            'name': kwargs['role_name'],
+                            'slug': self.create_slug(kwargs['role_name']),
+                            'weight': kwargs['role_weight']
+                        }
+                        nb.ipam.roles.create(role_data)
+                        role = nb.ipam.roles.get(name=kwargs['role_name'])
+                        if role == None:
+                            role_id = None
+                        else:
+                            role_id = role.id
+                    else:
+                        role_id = None
+                else:
+                    role_id = prefix.role.id
+                """
                 vlan = nb.ipam.vlans.get(name=kwargs['vlan_name'])
                 if vlan == None:
                     vlan_group = nb.ipam.vlan_groups.get(name=kwargs['vlan_group'])
+                    """
+                    if role_id != None:
+                        vlan_data = {
+                            "name": kwargs['vlan_name'],
+                            "vid": kwargs['vlan_id'],
+                            "group": vlan_group.id,
+                            "tenant": tenant.id,
+                            "status": "active",
+                            'role': role_id
+                        }
+                        nb.ipam.vlans.create(vlan_data)
+                        vlan = nb.ipam.vlans.get(name=kwargs['vlan_name'])
+                    elif role_id == None:
+                    """
                     vlan_data = {
                         "name": kwargs['vlan_name'],
                         "vid": kwargs['vlan_id'],
                         "group": vlan_group.id,
                         "tenant": tenant.id,
-                        "status": "active",
-                        'role': role.id
+                        "status": "active"
                     }
                     nb.ipam.vlans.create(vlan_data)
                     vlan = nb.ipam.vlans.get(name=kwargs['vlan_name'])
@@ -466,6 +520,25 @@ class CSV_PARSE():
                     }
                     nb.dcim.sites.create(site_data)
                     site = nb.dcim.sites.get(name=kwargs['site_name'])
+                """
+                if role_id != None:
+                    my_dict = {'purpose_value': 'add_prefixes',
+                               'data': {
+                                   'edit': {},
+                                   'add': {
+                                       "prefix": kwargs['prefix_name'],
+                                       "vrf": vrf.id,
+                                       "tenant": tenant.id,
+                                       "site": site.id,
+                                       "vlan": vlan.id,
+                                       "role": role.id,
+                                   },
+                                   'diff': {}
+                               }
+                               }
+                    return ["not exist", my_dict]
+                elif role_id == None:
+                """
                 my_dict = {'purpose_value': 'add_prefixes',
                            'data': {
                                'edit': {},
@@ -475,7 +548,6 @@ class CSV_PARSE():
                                    "tenant": tenant.id,
                                    "site": site.id,
                                    "vlan": vlan.id,
-                                   "role": role.id,
                                },
                                'diff': {}
                            }

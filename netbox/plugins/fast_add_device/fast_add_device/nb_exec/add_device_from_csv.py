@@ -177,7 +177,7 @@ class ADD_NB_CSV():
                         tenant= data['tenant'],
                         site= data['site'],
                         vlan= data['vlan'],
-                        role= data['role'],
+                        #role= data['role'],
                     )
                     return [True,data["prefix"],None]
                 except Exception as err:

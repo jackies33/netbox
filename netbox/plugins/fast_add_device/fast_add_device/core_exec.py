@@ -220,8 +220,8 @@ class CORE():#main class of plugin
             message = (
                 f'Netbox.handler[ "Event_Add Prefixes from csv file" ]\n Successfull added prefixes list - [ {list_success_result} ] '
                 f'\n wasnt added prefixes list - [ {list_bad_result} ]\n Time: [ "{datetime.datetime.now()}" ]')
-            sender = tg_bot(message)
-            sender.tg_sender()
+            #sender = tg_bot(message)
+            #sender.tg_sender()
             return [True, [list_bad_result, list_success_result]]
 
 
