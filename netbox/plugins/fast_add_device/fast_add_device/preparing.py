@@ -13,6 +13,7 @@ import yaml
 
 from .my_pass import mylogin , mypass ,rescue_login, rescue_pass,netbox_url,netbox_api_token
 from .keep_api import netbox_api_instance
+from .nb_exec.add_device_from_csv import ADD_NB_CSV
 
 
 class CONNECT_PREPARE():
@@ -180,7 +181,29 @@ class CSV_PARSE():
                 elif preparing_name in site_physical_address:
                     site = int(site_prepare.id)
         except Exception as err:
-            site = None
+            try:
+                site = int(nb.dcim.sites.get(name=row['site']).id)
+            except Exception as err:
+                site = None
+        if site == None:
+            site_name = row["site"]
+            slug_site = self.create_slug(site_name)
+            region = int(nb.dcim.regions.get(name=row['region']).id)
+            my_dict = {'purpose_value': 'add_site',
+                       'data': {
+                           'edit': {},
+                           'add': {
+                               'name': site_name,
+                               'slug': slug_site,
+                               'region': region,
+                               'physical_address': site_name,
+                           },
+                           'diff': {}
+                       }
+                       }
+            call = ADD_NB_CSV()
+            call.add_sites_csv(**my_dict)
+            site = int(nb.dcim.sites.get(name=row['site']).id)
         #print(f"RESULT\n\n\n{site}\n\n\nRESULT")
         try:
             device_role = int(nb.dcim.device_roles.get(name=row['device_role']).id)

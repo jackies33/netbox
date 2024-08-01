@@ -70,7 +70,10 @@ class CORE():#main class of plugin
 
             if kwargs['purpose_value'] == 'add':
                 call = ADD_NB()
-                result = call.add_device(**conn_data)#add device to netbox
+                if conn_data[0] == False:
+                    result = [False,conn_data[1]]
+                elif conn_data[0] == True:
+                    result = call.add_device(**conn_data[1])#add device to netbox
                 print("<<< Start core_exec.py >>>")
             elif kwargs['purpose_value'] == 'edit':
                 call = PARSE_DATA()
@@ -120,9 +123,14 @@ class CORE():#main class of plugin
             with ThreadPoolExecutor(max_workers=30) as executor:#use multiple stream for quickly get and parse data from connection to devices
                 partial_func = functools.partial(call.connection_csv_exec)
                 for data in executor.map(partial_func, list_for_connect):
-                    list_after_conn.append(data)
+                    if data[0] == False:
+                        list_bad_result.append(data[1])
+                    elif data[0] == True:
+                        list_after_conn.append(data[1])
             print("<<< Start core_exec.py >>>")
+            #print(list_after_conn)
             for l in list_after_conn:
+                print(l)
                 nb = pynetbox.api(url=netbox_url, token=netbox_api_token)
                 nb.http_session.verify = False
                 call = CSV_PARSE()
@@ -131,13 +139,17 @@ class CORE():#main class of plugin
                 for dev in devices:
                     list_devices_name.append(dev)
                 update_list_after_connect=[]
+                #print("TEST1")
                 for l in list_after_conn:
+                    #print(l)
                     result = call.check_exist_devices(list_devices_name, l)
                     data = result['data']['add']
+
                     if data['exist_device'] == True:
                         list_bad_result.append(data['device_name'])#check which device already exist in netbox and add it in bad list for report
                     elif data['exist_device'] == False:
                         update_list_after_connect.append(result)#prepare list which include devices for add
+               # print(update_list_after_connect)
                 for l in update_list_after_connect:
                     call = ADD_NB_CSV()
                     result = call.add_device_csv(**l)#add to netbox
