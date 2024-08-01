@@ -49,7 +49,7 @@ class ADD_NB_VC():
                 if kwargs['purpose_value'] == 'edit':
                       pass
                 elif kwargs['purpose_value'] == 'add':
-                    stack_amount = ''
+                    stack_amount = 'Virtual_Chassis:'
                     print(data)
                     for member in add_data['list_serial_device']:
                         mem_id = member['member_id']
@@ -153,7 +153,7 @@ class ADD_NB_VC():
                                         f'\n ip_address - [ "{add_data["primary_ip"]}" ] \n Time: [ "{datetime.datetime.now()}" ]')
                                     sender = tg_bot(message)
                                     sender.tg_sender()
-                                stack_amount = stack_amount + f' "{host_name}"'
+                                stack_amount = stack_amount + f'" <{host_name}>"'
 
                             elif master == False:
 
@@ -192,14 +192,12 @@ class ADD_NB_VC():
                                     return [False, err]
                                 else:
                                     print(f"Succesfull create and update device - {host_name} and send to telegram chat")
-                                stack_amount = stack_amount + f' "{host_name}"'
+                                stack_amount = stack_amount + f' " <{host_name}>"'
 
                         except Exception as err:
                             print(f"in update device  - - - {err}")
                             return [False, err]
                             pass
-
-
 
                     return [True, stack_amount]
 
