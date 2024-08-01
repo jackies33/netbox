@@ -71,7 +71,7 @@ class ADD_NB_VC():
                             )
                         except Exception as err:
                             print(f'device {add_data["device_name"]} is already done or \n {err}')
-                            return [False, err]
+                            return [False,host_name, err]
                             pass
                         time.sleep(1)
                         id_device = self.nb.dcim.devices.get(name=host_name)
@@ -86,7 +86,7 @@ class ADD_NB_VC():
                                     )
                                 except Exception as err:
                                     print(f'interface {add_data["interface_name"]} is already done \n\n {err} \n\n\ ')
-                                    return [False, err]
+                                    return [False,host_name, err]
                                 time.sleep(1)
                                 interface = self.nb.dcim.interfaces.get(name=add_data['interface_name'], device_id=id_device.id)
                                 interface_id = interface['id']
@@ -99,7 +99,7 @@ class ADD_NB_VC():
                                     )
                                 except Exception as err:
                                     print(f'Error for create an ip_address {err}')
-                                    return [False, err]
+                                    return [False,host_name, err]
                                 time.sleep(1)
 
                                 try:
@@ -145,7 +145,7 @@ class ADD_NB_VC():
                                     id_device.update({'primary_ip4': {'address': add_data['primary_ip']}})
                                 except Exception as err:
                                     print(f"in update device  - - - {err}")
-                                    return [False, err]
+                                    return [False,host_name, err]
                                 else:
                                     print(f"Succesfull create and update device - {host_name} and send to telegram chat")
                                     message = (
@@ -189,15 +189,15 @@ class ADD_NB_VC():
                                      id_device.update({'serial': sn_numb})
                                 except Exception as err:
                                     print(f"in update device  - - - {err}")
-                                    return [False, err]
+                                    return [False,host_name, err]
                                 else:
                                     print(f"Succesfull create and update device - {host_name} and send to telegram chat")
                                 stack_amount = stack_amount + f' " <{host_name}>"'
 
                         except Exception as err:
                             print(f"in update device  - - - {err}")
-                            return [False, err]
-                            pass
+                            return [False,host_name, err]
+
 
                     return [True, stack_amount]
 
