@@ -39,6 +39,18 @@ class ADD_NB_CSV():
             data = kwargs['data']['add']
             mgmt = data['management_status']
             conn_scheme = data['conn_scheme']
+            find_ip = self.nb.ipam.ip_addresses.filter(address=data['primary_ip'])
+            if find_ip:
+                for i in find_ip:
+                    id_ip = i.id
+                    device = self.nb.dcim.devices.filter(primary_ip4_id=int(id_ip))
+                    if device:
+                        for dev in device:
+                            return [False, f"Device with name '{data['device_name']}' already exists , check next device - {dev}"]
+                    else:
+                        pass
+            else:
+                pass
             # conn_scheme,str(management[1].lower))
             if mgmt == 1:
                 mgmt = "Active"

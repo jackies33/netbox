@@ -126,23 +126,6 @@ class CSV_PARSE():
             conn_scheme = '1'
         elif conn_scheme == 0:
             conn_scheme = False
-
-        location = row['location']
-        if location == '' or location == "None":
-            location = None
-        else:
-            try:
-                location = int(nb.dcim.locations.get(name=row['location']).id)
-            except Exception as err:
-                pass
-        rack = row['rack']
-        if rack == '' or rack == "None":
-            rack = None
-        else:
-            try:
-                rack = int(nb.dcim.racks.get(name=row['rack']).id)
-            except Exception as err:
-                rack= None
         if row['stack'] == '0':
             stack = False
         elif row['stack'] == '1':
@@ -169,22 +152,27 @@ class CSV_PARSE():
         except Exception as err:
             tenants = None
         site = None
-        try:
-            preparing_name = re.sub(r'[.,\s]', '', row["site"].lower().strip())
-            #print(f"1RESULT\n\n\n{preparing_name}\n\n\n1RESULT")
-            for site_prepare in nb.dcim.sites.all():
-                site_name = str(re.sub(r'[.,\s]', '', site_prepare.name.lower().strip()))
-                site_physical_address = str(re.sub(r'[.,\s]', '', site_prepare.physical_address.lower().strip()))
-                #print(f"2RESULT\n\n\n{site_name}\n\n\n2RESULT")
-                if preparing_name in site_name:
-                    site = int(site_prepare.id)
-                elif preparing_name in site_physical_address:
-                    site = int(site_prepare.id)
-        except Exception as err:
-            try:
-                site = int(nb.dcim.sites.get(name=row['site']).id)
-            except Exception as err:
-                site = None
+        #try:
+        #    preparing_name = re.sub(r'[.,\s]', '', row["site"].lower().strip())
+        #    #print(f"1RESULT\n\n\n{preparing_name}\n\n\n1RESULT")
+        #    for site_prepare in nb.dcim.sites.all():
+        #        site_name = str(re.sub(r'[.,\s]', '', site_prepare.name.lower().strip()))
+        #       site_physical_address = str(re.sub(r'[.,\s]', '', site_prepare.physical_address.lower().strip()))
+        #        #print(f"2RESULT\n\n\n{site_name}\n\n\n2RESULT")
+        #       if preparing_name in site_name:
+        #            site = int(site_prepare.id)
+        #        elif preparing_name in site_physical_address:
+        #            site = int(site_prepare.id)
+        #except Exception as err:
+        #    try:
+        #        site = int(nb.dcim.sites.get(name=row['site']).id)
+        #    except Exception as err:
+        #        site = None
+        site = int(nb.dcim.sites.get(id=int(row['site'])).id)
+        if site == None:
+            return [False,f"site is None for device - {primary_ip}"]
+        #site = int(nb.dcim.sites.get(name=row['site']).id)
+        """
         if site == None:
             site_name = row["site"]
             slug_site = self.create_slug(site_name)
@@ -205,6 +193,37 @@ class CSV_PARSE():
             call.add_sites_csv(**my_dict)
             site = int(nb.dcim.sites.get(name=row['site']).id)
         #print(f"RESULT\n\n\n{site}\n\n\nRESULT")
+        """
+        location_row = row['location']
+        if location_row == '' or location_row == "None":
+            location = None
+        else:
+            try:
+                location = nb.dcim.locations.get(name=location_row, site_id=site)
+                location = int(location.id)
+            except Exception as err:
+                slug = self.create_slug(location_row)
+                new_location = nb.dcim.locations.create(
+                    name=location_row,
+                    site=site,
+                    slug=slug
+                )
+                location = int(new_location.id)
+        rack_row = row['rack']
+        if rack_row == '' or rack_row == "None":
+            rack = None
+        else:
+            try:
+                rack = nb.dcim.racks.get(name=rack_row, location_id=location)
+                rack = int(rack.id)
+            except Exception as err:
+                slug = self.create_slug(rack_row)
+                new_rack = nb.dcim.racks.create(
+                    name=rack_row,
+                    location=location,
+                    slug=slug
+                )
+                rack = int(new_rack.id)
         try:
             device_role = int(nb.dcim.device_roles.get(name=row['device_role']).id)
         except Exception as err:
@@ -244,7 +263,7 @@ class CSV_PARSE():
                    }
                    }
         #my_list.append(my_dict)
-        return my_dict
+        return [True,my_dict]
 
     def csv_parse_sites(self, row):
         name = row["name"]

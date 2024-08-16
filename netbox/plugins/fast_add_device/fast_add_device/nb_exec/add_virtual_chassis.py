@@ -72,7 +72,6 @@ class ADD_NB_VC():
                         except Exception as err:
                             print(f'device {add_data["device_name"]} is already done or \n {err}')
                             return [False,host_name, err]
-                            pass
                         time.sleep(1)
                         id_device = self.nb.dcim.devices.get(name=host_name)
                         try:  # updating device
@@ -183,6 +182,11 @@ class ADD_NB_VC():
                                     pass
                                 if data['map_resource_group'] != None:
                                     id_device.update({'custom_fields': {'MAP_Group': data['map_resource_group']}})
+                                else:
+                                    pass
+                                if data['name_of_establishment'] != None:
+                                    id_device.update(
+                                        {'custom_fields': {'Name_of_Establishment': data['name_of_establishment']}})
                                 else:
                                     pass
                                 try:

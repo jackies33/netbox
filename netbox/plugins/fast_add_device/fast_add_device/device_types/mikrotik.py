@@ -91,11 +91,9 @@ class MIKROTIK_CONN():
 
                             return [True,kwargs]
 
-
                     except (NetMikoAuthenticationException, NetMikoTimeoutException) as err:  # exceptions
                         print('\n\n not connect to ' + ip_conn + '\n\n')
-
-
+                        return [False, ip_conn, err]
                     except Exception as err:
                         print(f"Error {err}")
                         return [False, ip_conn,err]

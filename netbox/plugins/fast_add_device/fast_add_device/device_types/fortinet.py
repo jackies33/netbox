@@ -70,13 +70,21 @@ class FORTINET_CONN():
                         output1 = (ssh1.recv(9999999).decode("utf-8"))
                         time.sleep(1)
                         device_name = re.findall(f"Hostname: \S+", output1)[0].split("Hostname: ")[1]
-                        interface_name = re.findall(f"==.+\n.+\n\s+ip: {ip_conn}", output1)[0]
-                        interface_name = re.findall(f"==\[\S+\]", interface_name)[0].split("==[")[1].rsplit(']')[0]
                         device_type = re.findall(f"Version: \S+", output1)[0].split("Version: ")[1]
                         member_sn = re.findall(r'Serial-Number: \S+', output1)[0].split("Serial-Number: ")[1]
                         list_serial_device.append({'member_id': 0, 'sn_number': member_sn, 'master': False})
                         manufacturer = 'Fortinet'
                         device_type = classifier_device_type(manufacturer ,device_type)
+                        interface_name = "vlan5"
+                        #if device_type == "FortiGate-100E":
+                        #    pattern = r'edit\s+"([^"]+)"(?:.|\n)*?set\s+ip\s+(\d+\.\d+\.\d+\.\d+)\s+\d+\.\d+\.\d+\.\d+'
+                        #    matches = re.findall(pattern, output1, re.DOTALL)
+                        #    for iface, ip in matches:
+                        #        if ip == ip_conn:
+                        #            interface_name = iface
+                        #else:
+                        #    interface_name = re.findall(f"==.+\n.+\n\s+ip: {ip_conn}", output1)[0]
+                        #    interface_name = re.findall(f"==\[\S+\]", interface_name)[0].split("==[")[1].rsplit(']')[0]
                         print("<<< Start fortinet.py >>>")
                         ssh1.close()
                         data_for_add.update(
@@ -120,3 +128,4 @@ class FORTINET_CONN():
                         except Exception as err:
                             return [False, "Undefined ip address", err]
                         return [False, ip_conn, err]
+

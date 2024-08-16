@@ -48,6 +48,7 @@ class CORE():#main class of plugin
                 prep = call.add_preparing(**kwargs)#prepare data for connect to device
                 print("<<< Start core_exec.py >>>")
                 call = CONNECT_DEVICE()
+                print(prep)
                 conn_data = call.connection_exec(**prep)#connection executing to target device, parse and prepare data for adding to netbox
                 print("<<< Start core_exec.py >>>")
             elif kwargs['purpose_value'] == 'edit':
@@ -62,6 +63,7 @@ class CORE():#main class of plugin
                 prep = call.edit_preparing(**extract)#prepare data for connect to device
                 print("<<< Start core_exec.py >>>")
                 call = CONNECT_DEVICE()
+                print(prep)
                 conn_data = call.connection_exec(**prep)#connection executing to target device, parse and prepare data for next tasks
                 print("<<< Start core_exec.py >>>")
             else:
@@ -71,7 +73,7 @@ class CORE():#main class of plugin
             if kwargs['purpose_value'] == 'add':
                 call = ADD_NB()
                 if conn_data[0] == False:
-                    result = [False,conn_data[1]]
+                    result = [False,conn_data[2]]
                 elif conn_data[0] == True:
                     result = call.add_device(**conn_data[1])#add device to netbox
                 print("<<< Start core_exec.py >>>")
@@ -90,7 +92,7 @@ class CORE():#main class of plugin
                 else:
                     result = [False, None]
             else:
-                result = [False,None]
+                result = [False, None]
             return result
 
         def add_offline(self, **kwargs):
@@ -113,7 +115,8 @@ class CORE():#main class of plugin
             with ThreadPoolExecutor(max_workers=30) as executor:#use multiple stream for quicker get and parse data
                 partial_func = functools.partial(call.find_out_csv_values)
                 for data in executor.map(partial_func, my_list):
-                    list_for_connect.append(data)
+                    if data[0] == True:
+                        list_for_connect.append(data[1])
             list_bad = [item for item in list_for_connect if item['data']['add']['conn_scheme'] == False]
             list_for_connect = [item for item in list_for_connect if item['data']['add']['conn_scheme'] != False]
             for r in list_bad:
@@ -154,7 +157,7 @@ class CORE():#main class of plugin
                     call = ADD_NB_CSV()
                     result = call.add_device_csv(**l)#add to netbox
                     if result[0] == False:
-                        pass
+                        list_bad_result.append(result[1])
                     elif result[0] == True:
                         list_success_result.append(result[1])
             message = (f'Netbox.handler[ "Event_Add Devices from csv file" ]\n Successfull added devices list - [ {list_success_result} ] '
