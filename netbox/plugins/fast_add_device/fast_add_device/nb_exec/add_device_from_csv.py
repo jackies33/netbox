@@ -39,6 +39,18 @@ class ADD_NB_CSV():
             data = kwargs['data']['add']
             mgmt = data['management_status']
             conn_scheme = data['conn_scheme']
+            find_ip = self.nb.ipam.ip_addresses.filter(address=data['primary_ip'])
+            if find_ip:
+                for i in find_ip:
+                    id_ip = i.id
+                    device = self.nb.dcim.devices.filter(primary_ip4_id=int(id_ip))
+                    if device:
+                        for dev in device:
+                            return [False, f"Device with name '{data['device_name']}' already exists , check next device - {dev}"]
+                    else:
+                        pass
+            else:
+                pass
             # conn_scheme,str(management[1].lower))
             if mgmt == 1:
                 mgmt = "Active"
@@ -70,7 +82,7 @@ class ADD_NB_CSV():
                     )
                 except Exception as err:
                     print(f'device {data["device_name"]} is already done or \n {err}')
-                    return [False, data["device_name"]]
+                    return [False, data["device_name"],err]
                 time.sleep(1)
                 id_device = self.nb.dcim.devices.filter(name=data["device_name"])
                 for d in id_device:
@@ -84,7 +96,7 @@ class ADD_NB_CSV():
                     )
                 except Exception as err:
                     print(f'interface {data["interfaces_name"]} is already done \n\n {err} \n\n\ ')
-                    return [False, data["device_name"]]
+                    return [False, data["device_name"],err]
                 time.sleep(1)
                 interface = self.nb.dcim.interfaces.filter(name=data["interface_name"], device_id=id_device.id)
                 for i in interface:
@@ -99,7 +111,7 @@ class ADD_NB_CSV():
                     )
                 except Exception as err:
                     print(f'Error for create an ip_address {err}')
-                    return [False, data["device_name"]]
+                    return [False, data["device_name"],err]
                 time.sleep(1)
                 try:
                     sn = data['list_serial_device'][0]['sn_number']
@@ -126,7 +138,7 @@ class ADD_NB_CSV():
                     id_device.update({'primary_ip4': {'address': data['primary_ip']}})
                 except Exception as err:
                     print(f"in update device  - - - {err}")
-                    return [False, data["device_name"]]
+                    return [False, data["device_name"],err]
                 else:
                     print(f'Succesfull create and update device - [ "{data["device_name"]}" ] ')
                 return [True, data["device_name"]]
@@ -138,7 +150,7 @@ class ADD_NB_CSV():
                         return [True, result_stack[1]]
                     elif result_stack[0] == False:
                         print(result_stack[1])
-                        return [False, result_stack[1]]
+                        return [False, result_stack[1],result_stack[2]]
 
         def add_sites_csv(self, **kwargs):
                 print("<<< Start add_device.py >>>")
@@ -177,7 +189,7 @@ class ADD_NB_CSV():
                         tenant= data['tenant'],
                         site= data['site'],
                         vlan= data['vlan'],
-                        role= data['role'],
+                        #role= data['role'],
                     )
                     return [True,data["prefix"],None]
                 except Exception as err:

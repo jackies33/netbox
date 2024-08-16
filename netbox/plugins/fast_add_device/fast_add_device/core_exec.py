@@ -48,6 +48,7 @@ class CORE():#main class of plugin
                 prep = call.add_preparing(**kwargs)#prepare data for connect to device
                 print("<<< Start core_exec.py >>>")
                 call = CONNECT_DEVICE()
+                print(prep)
                 conn_data = call.connection_exec(**prep)#connection executing to target device, parse and prepare data for adding to netbox
                 print("<<< Start core_exec.py >>>")
             elif kwargs['purpose_value'] == 'edit':
@@ -62,6 +63,7 @@ class CORE():#main class of plugin
                 prep = call.edit_preparing(**extract)#prepare data for connect to device
                 print("<<< Start core_exec.py >>>")
                 call = CONNECT_DEVICE()
+                print(prep)
                 conn_data = call.connection_exec(**prep)#connection executing to target device, parse and prepare data for next tasks
                 print("<<< Start core_exec.py >>>")
             else:
@@ -70,7 +72,10 @@ class CORE():#main class of plugin
 
             if kwargs['purpose_value'] == 'add':
                 call = ADD_NB()
-                result = call.add_device(**conn_data)#add device to netbox
+                if conn_data[0] == False:
+                    result = [False,conn_data[2]]
+                elif conn_data[0] == True:
+                    result = call.add_device(**conn_data[1])#add device to netbox
                 print("<<< Start core_exec.py >>>")
             elif kwargs['purpose_value'] == 'edit':
                 call = PARSE_DATA()
@@ -87,7 +92,7 @@ class CORE():#main class of plugin
                 else:
                     result = [False, None]
             else:
-                result = [False,None]
+                result = [False, None]
             return result
 
         def add_offline(self, **kwargs):
@@ -110,7 +115,8 @@ class CORE():#main class of plugin
             with ThreadPoolExecutor(max_workers=30) as executor:#use multiple stream for quicker get and parse data
                 partial_func = functools.partial(call.find_out_csv_values)
                 for data in executor.map(partial_func, my_list):
-                    list_for_connect.append(data)
+                    if data[0] == True:
+                        list_for_connect.append(data[1])
             list_bad = [item for item in list_for_connect if item['data']['add']['conn_scheme'] == False]
             list_for_connect = [item for item in list_for_connect if item['data']['add']['conn_scheme'] != False]
             for r in list_bad:
@@ -120,9 +126,14 @@ class CORE():#main class of plugin
             with ThreadPoolExecutor(max_workers=30) as executor:#use multiple stream for quickly get and parse data from connection to devices
                 partial_func = functools.partial(call.connection_csv_exec)
                 for data in executor.map(partial_func, list_for_connect):
-                    list_after_conn.append(data)
+                    if data[0] == False:
+                        list_bad_result.append(data[1])
+                    elif data[0] == True:
+                        list_after_conn.append(data[1])
             print("<<< Start core_exec.py >>>")
+            #print(list_after_conn)
             for l in list_after_conn:
+                print(l)
                 nb = pynetbox.api(url=netbox_url, token=netbox_api_token)
                 nb.http_session.verify = False
                 call = CSV_PARSE()
@@ -131,18 +142,22 @@ class CORE():#main class of plugin
                 for dev in devices:
                     list_devices_name.append(dev)
                 update_list_after_connect=[]
+                #print("TEST1")
                 for l in list_after_conn:
+                    #print(l)
                     result = call.check_exist_devices(list_devices_name, l)
                     data = result['data']['add']
+
                     if data['exist_device'] == True:
                         list_bad_result.append(data['device_name'])#check which device already exist in netbox and add it in bad list for report
                     elif data['exist_device'] == False:
                         update_list_after_connect.append(result)#prepare list which include devices for add
+               # print(update_list_after_connect)
                 for l in update_list_after_connect:
                     call = ADD_NB_CSV()
                     result = call.add_device_csv(**l)#add to netbox
                     if result[0] == False:
-                        pass
+                        list_bad_result.append(result[1])
                     elif result[0] == True:
                         list_success_result.append(result[1])
             message = (f'Netbox.handler[ "Event_Add Devices from csv file" ]\n Successfull added devices list - [ {list_success_result} ] '
@@ -220,8 +235,8 @@ class CORE():#main class of plugin
             message = (
                 f'Netbox.handler[ "Event_Add Prefixes from csv file" ]\n Successfull added prefixes list - [ {list_success_result} ] '
                 f'\n wasnt added prefixes list - [ {list_bad_result} ]\n Time: [ "{datetime.datetime.now()}" ]')
-            sender = tg_bot(message)
-            sender.tg_sender()
+            #sender = tg_bot(message)
+            #sender.tg_sender()
             return [True, [list_bad_result, list_success_result]]
 
 
