@@ -54,26 +54,26 @@ class HUAWEI_CONN():
                         with ConnectHandler(**host1) as net_connect:
                             primary_ip = (f'{ip_conn}/{mask}')
                             output_name_result = net_connect.send_command('display current-configuration | include sysname',
-                                                                          delay_factor=.5)  # command result
+                                                                          delay_factor=20)  # command result
                             device_name = re.findall(r"sysname \S+", output_name_result)[0].split('sysname ')[1]
                             output_version = net_connect.send_command('display version',
-                                                                      delay_factor=.5)
+                                                                      delay_factor=20)
                             command_ip = (f'display ip interface brief  | include {ip_conn}')
-                            output_ip = net_connect.send_command(command_ip, delay_factor=.5)
+                            output_ip = net_connect.send_command(command_ip, delay_factor=20)
                             escaped_ip_address = re.escape(ip_conn)
                             re_ip = (f"(\S+)\s+{escaped_ip_address}")
                             interface_name = re.findall(re_ip, output_ip)[0]
                             manufacturer = 'Huawei Technologies Co.'
                             #device_type = classifier_device_type(manufacturer ,re.findall(r'NE20E-S2F|AR6120|NetEngine 8000 F1A-8H20Q'
                             #                                                            r'|S5700-28C-EI-24S|S5735-S48S4X|CE8851-32CQ8DQ-P|CE6881-48S6CQ', output_version)[0])
-                            show_device = net_connect.send_command('display device',delay_factor=.5)
+                            show_device = net_connect.send_command('display device',delay_factor=20)
                             device_type = classifier_device_type(
-                                manufacturer,re.findall(f".+\s+Device status:",
-                                                        show_device, re.MULTILINE)[0].split("Device status:")[0].split("'s")[0].strip())
+                                    manufacturer,re.findall(f".+\s+Device status:",
+                                                            show_device, re.MULTILINE)[0].split("Device status:")[0].split("'s")[0].strip())
                             print("<<< Start huawei.py >>>")
                             list_serial_device = []
                             if stack_enable == True:
-                                output_stack = net_connect.send_command('display stack', delay_factor=.5)
+                                output_stack = net_connect.send_command('display stack', delay_factor=20)
                                 slave_output = re.findall(r"\d\s+Slave", output_stack)
                                 standby_output = re.findall(r"\d\s+Standby", output_stack)
                                 master_output = re.findall(r"\d\s+Master", output_stack)
@@ -89,7 +89,7 @@ class HUAWEI_CONN():
                                     member_id = master.replace(" ", "").split('Master')[0]
                                     list_serial_device.append(
                                         {'member_id': member_id, 'sn_number': '', 'master': True})
-                                output_manufacturer = net_connect.send_command('display device manufacture-info', delay_factor=.5)
+                                output_manufacturer = net_connect.send_command('display device manufacture-info', delay_factor=20)
                                 member_output = re.findall(f'^\d\s+-\s+\S+', output_manufacturer, re.MULTILINE)
                                 for member in member_output:
                                     member_id = re.findall(r'\d\s+-\s+', member)[0].replace(" ", "")[0]
@@ -99,7 +99,7 @@ class HUAWEI_CONN():
                                             l['sn_number'] = member_sn
 
                             elif stack_enable == False:
-                                output_sn_main = net_connect.send_command('display elabel', delay_factor=.5)
+                                output_sn_main = net_connect.send_command('display elabel', delay_factor=20)
                                 member_sn = re.findall(f"BarCode=\S+", output_sn_main, re.MULTILINE)[0].split("BarCode=")[1].strip()
                                 list_serial_device.append({'member_id': 0, 'sn_number': member_sn, 'master': False})
 
@@ -148,16 +148,17 @@ class HUAWEI_CONN():
                                     primary_ip = (f'{ip_conn}/{mask}')
                                     output_name_result = net_connect.send_command(
                                         'display current-configuration | include sysname',
-                                        delay_factor=.5)  # command result
+                                        delay_factor=20)  # command result
                                     device_name = re.findall(r"sysname \S+", output_name_result)[0].split('sysname ')[1]
                                     #output_version = net_connect.send_command('display version',
                                     #                                         delay_factor=.5)
                                     command_ip = (f'display ip interface brief  | include {ip_conn}')
-                                    output_ip = net_connect.send_command(command_ip, delay_factor=.5)
+                                    output_ip = net_connect.send_command(command_ip, delay_factor=20)
                                     escaped_ip_address = re.escape(ip_conn)
                                     re_ip = (f"(\S+)\s+{escaped_ip_address}")
                                     interface_name = re.findall(re_ip, output_ip)[0]
                                     manufacturer = 'Huawei Technologies Co.'
+                                    show_device = net_connect.send_command('display device', delay_factor=20)
                                     device_type = classifier_device_type(
                                         manufacturer, re.findall(f".+\s+Device status:",
                                                                  show_device, re.MULTILINE)[0].split("Device status:")
@@ -165,7 +166,7 @@ class HUAWEI_CONN():
                                     print("<<< Start huawei.py >>>")
                                     list_serial_device = []
                                     if stack_enable == True:
-                                        output_stack = net_connect.send_command('display stack', delay_factor=.5)
+                                        output_stack = net_connect.send_command('display stack', delay_factor=20)
                                         slave_output = re.findall(r"\d\s+Slave", output_stack)
                                         standby_output = re.findall(r"\d\s+Standby", output_stack)
                                         master_output = re.findall(r"\d\s+Master", output_stack)
@@ -182,7 +183,7 @@ class HUAWEI_CONN():
                                             list_serial_device.append(
                                                 {'member_id': member_id, 'sn_number': '', 'master': True})
                                         output_manufacturer = net_connect.send_command('display device manufacture-info',
-                                                                                       delay_factor=.5)
+                                                                                       delay_factor=20)
                                         member_output = re.findall(f'^\d\s+-\s+\S+', output_manufacturer, re.MULTILINE)
                                         for member in member_output:
                                             member_id = re.findall(r'\d\s+-\s+', member)[0].replace(" ", "")[0]
@@ -192,7 +193,7 @@ class HUAWEI_CONN():
                                                     l['sn_number'] = member_sn
 
                                     elif stack_enable == False:
-                                        output_sn_main = net_connect.send_command('display elabel', delay_factor=.5)
+                                        output_sn_main = net_connect.send_command('display elabel', delay_factor=20)
                                         member_sn = \
                                         re.findall(f"BarCode=\S+", output_sn_main, re.MULTILINE)[0].split("BarCode=")[1].strip()
                                         list_serial_device.append({'member_id': 0, 'sn_number': member_sn, 'master': False})
@@ -240,19 +241,19 @@ class HUAWEI_CONN():
                                 pattern_output = r'<.*>'
                                 output_name_result = net_connect.send_command(
                                     'display current-configuration | include sysname',expect_string=pattern_output,
-                                    delay_factor=.5)  # command result
+                                    delay_factor=20)  # command result
                                 device_name = re.findall(r"sysname \S+", output_name_result)[0].split('sysname ')[1]
                                 output_version = net_connect.send_command('display version',expect_string=pattern_output,
-                                                                          delay_factor=.5)
+                                                                          delay_factor=20)
                                 command_ip = (f'display ip interface brief  | include {ip_conn}')
-                                output_ip = net_connect.send_command(command_ip, expect_string=pattern_output, delay_factor=.5)
+                                output_ip = net_connect.send_command(command_ip, expect_string=pattern_output, delay_factor=20)
                                 escaped_ip_address = re.escape(ip_conn)
                                 re_ip = (f"(\S+)\s+{escaped_ip_address}")
                                 interface_name = re.findall(re_ip, output_ip)[0]
                                 manufacturer = 'Huawei Technologies Co.'
                                 # device_type = classifier_device_type(manufacturer ,re.findall(r'NE20E-S2F|AR6120|NetEngine 8000 F1A-8H20Q'
                                 #                                                            r'|S5700-28C-EI-24S|S5735-S48S4X|CE8851-32CQ8DQ-P|CE6881-48S6CQ', output_version)[0])
-                                show_device = net_connect.send_command('display device', expect_string=pattern_output, delay_factor=.5)
+                                show_device = net_connect.send_command('display device', expect_string=pattern_output, delay_factor=20)
                                 device_type = classifier_device_type(
                                     manufacturer, re.findall(f".+\s+Device status:",
                                                              show_device, re.MULTILINE)[0].split("Device status:")[0].split(
@@ -260,7 +261,7 @@ class HUAWEI_CONN():
                                 print("<<< Start huawei.py >>>")
                                 list_serial_device = []
                                 if stack_enable == True:
-                                    output_stack = net_connect.send_command('display stack', expect_string=pattern_output, delay_factor=.5)
+                                    output_stack = net_connect.send_command('display stack', expect_string=pattern_output, delay_factor=20)
                                     slave_output = re.findall(r"\d\s+Slave", output_stack)
                                     standby_output = re.findall(r"\d\s+Standby", output_stack)
                                     master_output = re.findall(r"\d\s+Master", output_stack)
@@ -277,7 +278,7 @@ class HUAWEI_CONN():
                                         list_serial_device.append(
                                             {'member_id': member_id, 'sn_number': '', 'master': True})
                                     output_manufacturer = net_connect.send_command('display device manufacture-info', expect_string=pattern_output,
-                                                                                   delay_factor=.5)
+                                                                                   delay_factor=20)
                                     member_output = re.findall(f'^\d\s+-\s+\S+', output_manufacturer, re.MULTILINE)
                                     for member in member_output:
                                         member_id = re.findall(r'\d\s+-\s+', member)[0].replace(" ", "")[0]
@@ -288,7 +289,7 @@ class HUAWEI_CONN():
 
                                 elif stack_enable == False:
                                     try:
-                                        output_sn_main = net_connect.send_command_timing('display elabel', delay_factor=.5)
+                                        output_sn_main = net_connect.send_command_timing('display elabel', delay_factor=20)
                                         if "[Y/N]:" in output_sn_main:
                                             output_sn_main += net_connect.send_command_timing('y')
                                         member_sn = \

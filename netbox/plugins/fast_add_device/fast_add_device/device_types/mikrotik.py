@@ -44,10 +44,10 @@ class MIKROTIK_CONN():
 
                         with ConnectHandler(**host1) as net_connect:
                             primary_ip = (f'{ip_conn}/{mask}')
-                            device_type_output = net_connect.send_command('system resource print',delay_factor=.5)  # command result
-                            device_name_output = net_connect.send_command('system export', delay_factor=.5)
-                            ip_address_output = net_connect.send_command('ip address print', delay_factor=.5)
-                            serial_output = net_connect.send_command('system routerboard print', delay_factor=.5)
+                            device_type_output = net_connect.send_command('system resource print',delay_factor=.5,read_timeout=10)  # command result
+                            device_name_output = net_connect.send_command('system export', delay_factor=.5,read_timeout=10)
+                            ip_address_output = net_connect.send_command('ip address print', delay_factor=.5,read_timeout=10)
+                            serial_output = net_connect.send_command('system routerboard print', delay_factor=.5, read_timeout=10)
                             device_type = re.findall(r'board-name:\s+\S+', device_type_output)[0].split("board-name:")[1].split()[0]
                             device_name = re.findall(r'set name=\S+', device_name_output)[0].split('set name=')[1]
                             #
