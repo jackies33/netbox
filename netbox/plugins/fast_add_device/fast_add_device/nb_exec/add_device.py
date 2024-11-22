@@ -33,6 +33,7 @@ class ADD_NB():
 
         def add_device(self,**kwargs):
             print("<<< Start add_device.py >>>")
+            print(kwargs)
             # print('this is add_device.py!!!!')
             data = kwargs['data']['add']
             mgmt = data['management_status']

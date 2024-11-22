@@ -261,7 +261,8 @@ class CONNECT_DEVICE():#func for parse and prepare data for connection and other
             conn_scheme = connecting.check_ssh(**{'ip_conn':ip_conn})
             print("<<< Start core_exec.py >>>")
             if conn_scheme == 0:
-                return [False, "No connection to device! "]
+                conn_scheme = '1'
+            #    return [False, "No connection to device! "]
             if conn_scheme == 'telnet':
                 conn_scheme = '2'
             if conn_scheme == 'ssh':
@@ -338,6 +339,7 @@ class CONNECT_DEVICE():#func for parse and prepare data for connection and other
                 "Huawei.VRP": (HUAWEI_CONN, "conn_Huawei"),
                 "Juniper.JUNOS": (JUNIPER_CONN, "conn_Juniper_rpc"),
                 "Cisco.IOS": (CISCO_CONN, "conn_Cisco_IOS"),
+                "Cisco.IOSXE": (CISCO_CONN, "conn_Cisco_IOS"),
                 "Cisco.IOSXR": (CISCO_CONN, "conn_Cisco_IOS_XR"),
                 "IBM.NOS": (IBM, "conn_IBM_lenovo_sw"),
                 "Cisco.NXOS": (CISCO_CONN, "conn_Cisco_NXOS"),
@@ -372,6 +374,7 @@ class CONNECT_DEVICE():#func for parse and prepare data for connection and other
                 "Huawei.VRP": (HUAWEI_CONN, "conn_Huawei"),
                 "Juniper.JUNOS": (JUNIPER_CONN, "conn_Juniper_rpc"),
                 "Cisco.IOS": (CISCO_CONN, "conn_Cisco_IOS"),
+                "Cisco.IOSXE": (CISCO_CONN, "conn_Cisco_IOS"),
                 "Cisco.IOSXR": (CISCO_CONN, "conn_Cisco_IOS_XR"),
                 "IBM.NOS": (IBM, "conn_IBM_lenovo_sw"),
                 "Cisco.NXOS": (CISCO_CONN, "conn_Cisco_NXOS"),
