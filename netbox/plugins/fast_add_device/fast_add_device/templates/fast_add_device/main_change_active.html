@@ -101,6 +101,17 @@
             <tr>
                 <td align="left"><b>{{ form.devices.label_tag }}*</b></td>
                 <td>{{ form.devices }}</td>
+                <td>{{ form.devices.errors }}</td>
+                <td>{{ form.managed_state.errors }}</td>
+            </tr>
+            <tr>
+                <td align="left"><b>{{ form.secondary_ip.label_tag }}*</b></td>
+                <td>{{ form.secondary_ip }}</td>
+                <td>{{ form.managed_state.errors }}</td>
+            </tr>
+            <tr>
+                <td align="left"><b>{{ form.hostname.label_tag }}*</b></td>
+                <td>{{ form.hostname }}</td>
                 <td>{{ form.managed_state.errors }}</td>
             </tr>
         </table>

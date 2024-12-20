@@ -17,7 +17,8 @@ class EXTRACT_NB():
     def extract_for_edit(self, **kwargs):
         print("<<< Start extract_nb.py >>>")
         try:
-            device_id = kwargs['data']['edit']['device_id']
+            device_id = kwargs['device_id']
+            target_list = kwargs["target_list"]
             trans_dict = {}
             list_serial_device = []
             self.nb = pynetbox.api(url=netbox_url, token=netbox_api_token)
@@ -133,7 +134,7 @@ class EXTRACT_NB():
                            'location':location,
                            'rack': rack,
                            'tenants': main_value_device.tenant.id,
-                           'device_role': main_value_device.device_role.id,
+                           'device_role': main_value_device.role.id,
                            'device_type': main_value_device.device_type.id,
                            'manufacturer': str(main_value_device.device_type.manufacturer),
                            'platform': main_value_device.platform.id,
@@ -149,6 +150,7 @@ class EXTRACT_NB():
                            'name_of_establishment': name_of_establishment
             },
                                'add':{},
+                               'target_list':target_list,
                                'diff':{}
             }})
             return [True,trans_dict]

@@ -61,7 +61,7 @@ class ADD_NB_VC():
                                 name=host_name,
                                 status=mgmt.lower(),
                                 site=add_data['site'],
-                                device_role=add_data['device_role'],
+                                role=add_data['device_role'],
                                 manufacturer=add_data['manufacturer'].title(),
                                 platform=add_data['platform'],
                                 device_type=add_data['device_type'],

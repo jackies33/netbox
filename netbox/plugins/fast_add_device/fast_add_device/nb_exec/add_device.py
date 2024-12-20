@@ -24,6 +24,9 @@ class ADD_NB():
             self.aobjt = 'dcim.interface'
             self.status = 'active'
             self.type_of_interface = 'virtual'
+            self.status_secondary_ip = 'active'
+            self.name_of_interface_secondary = 'lo'
+            self.secondary_iface_label = 'secondary'
             self.nb = pynetbox.api(url=netbox_url,
                                    token=netbox_api_token)
             self.nb.http_session.verify = False
@@ -71,7 +74,7 @@ class ADD_NB():
                         name=data['device_name'],
                         status=mgmt.lower(),
                         site=data['site'],
-                        device_role=data['device_role'],
+                        role=data['device_role'],
                         manufacturer=data['manufacturer'].title(),
                         platform=data['platform'],
                         device_type=data['device_type'],
@@ -109,6 +112,11 @@ class ADD_NB():
                     return [False, err]
                 time.sleep(1)#next will try to update some fields for device
                 try:
+                    id_device.update({'primary_ip4': {'address': data['primary_ip']}})
+                except Exception as err:
+                    print(f"in update device  - - - {err}")
+                    return [False, err]
+                try:
                     sn = data['list_serial_device'][0]['sn_number']
                     id_device.update({'serial': sn})
                 except Exception as err:
@@ -129,11 +137,37 @@ class ADD_NB():
                     id_device.update({'custom_fields': {'Name_of_Establishment': data['name_of_establishment']}})
                 else:
                     pass
+
                 try:
-                    id_device.update({'primary_ip4': {'address': data['primary_ip']}})
+                    device_role_name = str(self.nb.dcim.device_roles.get(id=data['device_role']))
+                    device_platform_name = str(self.nb.dcim.platforms.get(id=data['platform']))
+                    if device_platform_name == "B4TECH" and device_role_name == "leaf" or \
+                        device_platform_name == "B4TECH" and device_role_name == "stleaf":
+                        try:
+                            secondary_ip = data['secondary_ip']
+                            self.nb.dcim.interfaces.create(
+                                # add interface and belong it to device which created before
+                                device=id_device.id,
+                                name=self.name_of_interface_secondary,
+                                type=self.type_of_interface,
+                                enabled=True,
+                                label=self.secondary_iface_label
+                            )
+                            interface = self.nb.dcim.interfaces.get(name=self.name_of_interface_secondary,
+                                                                    device_id=id_device.id)
+                            if interface:
+                                interface_id = interface['id']
+                                self.nb.ipam.ip_addresses.create(
+                                    # add ip_address and belong it to interface which created before
+                                    address=secondary_ip,
+                                    status=self.status_secondary_ip,
+                                    assigned_object_type=self.aobjt,
+                                    assigned_object_id=interface_id,
+                                )
+                        except Exception as err:
+                            print(err)
                 except Exception as err:
-                    print(f"in update device  - - - {err}")
-                    return [False, err]
+                    device_role_name = None
                 else:
                     print(f'Succesfull create and update device - [ "{data["device_name"]}" ] and send to telegram chat')
                     message = (f'Netbox.handler[ "Event_Add Device" ]\n Device Name - [ "{data["device_name"]}" ] '
