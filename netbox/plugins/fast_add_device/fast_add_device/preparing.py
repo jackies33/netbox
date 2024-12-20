@@ -11,7 +11,7 @@ import json
 import yaml
 
 
-from .my_pass import mylogin , mypass ,rescue_login, rescue_pass,netbox_url,netbox_api_token
+from .my_pass import mylogin , mypass ,rescue_login, rescue_pass,netbox_url,netbox_api_token,my_login_b4com,my_pass_b4com
 from .keep_api import netbox_api_instance
 from .nb_exec.add_device_from_csv import ADD_NB_CSV
 
@@ -27,6 +27,7 @@ class CONNECT_PREPARE():
                         """
 
         def check_ssh(self, **kwargs):# func for check ssh or telnet - connections method
+            """
             ip_conn = kwargs['ip_conn']
             socket.setdefaulttimeout(1)
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -35,13 +36,13 @@ class CONNECT_PREPARE():
                 if result == 0:
                     scheme = 'ssh'
                 else:
-                    """
+                    '''
                     result = sock.connect_ex((ip_conn, 23))
                     if result == 103:
                         scheme = 'telnet'
                     else:
                         scheme = 0
-                    """
+                    '''
                     try:
                         telnetlib.Telnet(ip_conn, timeout=1)
                         scheme = 'telnet'
@@ -53,6 +54,8 @@ class CONNECT_PREPARE():
                 print(err)
                 scheme = 0
             sock.close()
+            """
+            scheme = 'ssh'
             return scheme
 
         def template_conn(self, **kwargs):# method for make template for connection via netmiko
@@ -60,7 +63,19 @@ class CONNECT_PREPARE():
             ip_conn = kwargs['ip_conn']
             conn_scheme = kwargs['conn_scheme']
             type_device_for_conn = kwargs['type_device_for_conn']
-            if conn_scheme == "1" and type_device_for_conn != "hp_procurve":
+            print(type_device_for_conn)
+            if "b4com" in type_device_for_conn:
+                host1 = {
+
+                    "host": ip_conn,
+                    "username": my_login_b4com,
+                    "password": my_pass_b4com,
+                    "device_type": 'cisco_ios',
+                    "global_delay_factor": 3,
+                }
+                return host1
+
+            elif conn_scheme == "1" and type_device_for_conn != "hp_procurve":
                 host1 = {
 
                     "host": ip_conn,
@@ -69,6 +84,7 @@ class CONNECT_PREPARE():
                     "device_type": type_device_for_conn,
                     "global_delay_factor": 0.5,
                 }
+                return host1
             elif  conn_scheme == "1" and type_device_for_conn == "hp_procurve":
                 host1 = {
 
@@ -79,6 +95,8 @@ class CONNECT_PREPARE():
                         "global_delay_factor": 3,
                         "secret": mypass,
                 }
+                return host1
+
             else:
                 host1 = {
 
@@ -88,8 +106,7 @@ class CONNECT_PREPARE():
                     "device_type": type_device_for_conn,
                     "global_delay_factor": 3,
                 }
-
-            return host1
+                return host1
 
 
 
@@ -117,17 +134,19 @@ class CSV_PARSE():
         primary_ip = row['ip'].strip()
         ip_conn = primary_ip.split('/')[0]
         mask = primary_ip.split('/')[1]
-        connecting = CONNECT_PREPARE()
-        conn_scheme = connecting.check_ssh(**{'ip_conn': ip_conn})
+        #connecting = CONNECT_PREPARE()
+        #conn_scheme = connecting.check_ssh(**{'ip_conn': ip_conn})
         print("<<< Start core_exec.py >>>")
-        if conn_scheme == 'telnet':
-            conn_scheme = '2'
-        elif conn_scheme == 'ssh':
-            conn_scheme = '1'
-        elif conn_scheme == 0:
-            conn_scheme = False
+        #if conn_scheme == 'telnet':
+        #    conn_scheme = '2'
+        #elif conn_scheme == 'ssh':
+        #    conn_scheme = '1'
+        #elif conn_scheme == 0:
+        #    conn_scheme = False
+        conn_scheme = '1'
         if row['stack'] == '0':
             stack = False
+
         elif row['stack'] == '1':
             stack = True
         else:
@@ -199,16 +218,17 @@ class CSV_PARSE():
             location = None
         else:
             try:
-                location = nb.dcim.locations.get(name=location_row, site_id=site)
+                location = nb.dcim.locations.get(id=int(location_row), site_id=site)
                 location = int(location.id)
             except Exception as err:
-                slug = self.create_slug(location_row)
-                new_location = nb.dcim.locations.create(
-                    name=location_row,
-                    site=site,
-                    slug=slug
-                )
-                location = int(new_location.id)
+                print(err)
+                #slug = self.create_slug(location_row)
+                #new_location = nb.dcim.locations.create(
+                #    name=location_row,
+                #    site=site,
+                #    slug=slug
+                #)
+                #location = int(new_location.id)
         rack_row = row['rack']
         if rack_row == '' or rack_row == "None":
             rack = None
@@ -217,15 +237,25 @@ class CSV_PARSE():
                 rack = nb.dcim.racks.get(name=rack_row, location_id=location)
                 rack = int(rack.id)
             except Exception as err:
+                print(err)
+                rack = None
                 slug = self.create_slug(rack_row)
                 new_rack = nb.dcim.racks.create(
                     name=rack_row,
                     location=location,
-                    slug=slug
+                    slug=slug,
+                    site=site,
+                    u_height=48
                 )
                 rack = int(new_rack.id)
+        unit_of_rack = None
+        unit_of_rack = row['unit_of_rack']
+        if unit_of_rack == '' or unit_of_rack == None:
+            rack = None
+
         try:
             device_role = int(nb.dcim.device_roles.get(name=row['device_role']).id)
+
         except Exception as err:
             device_role = None
         #print(f"1RESULT\n\n\n{row['tg_resource_group']}\n\n\n1RESULT")
@@ -254,6 +284,7 @@ class CSV_PARSE():
                            'conn_scheme': conn_scheme,
                            'management_status': 1,  ### number 2 becuase online
                            'rack': rack,
+                           'unit_of_rack':unit_of_rack,
                            'stack_enable': stack,
                            'tg_resource_group': tg_resource_group,
                            'map_resource_group': map_resource_group,

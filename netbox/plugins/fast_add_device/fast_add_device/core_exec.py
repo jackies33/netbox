@@ -1,12 +1,15 @@
 
 
 #external imports
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import functools
 import pynetbox
 import csv
 from io import TextIOWrapper
 import datetime
+import logging
+
+
 
 #internal imports
 from .preparing import CONNECT_PREPARE,CSV_PARSE
@@ -25,7 +28,18 @@ from .device_types.linux import LINUX
 from .device_types.hpe import HPProCurve9xxx
 from .device_types.mikrotik import MIKROTIK_CONN
 from .device_types.qtech import QTECH_CONN
+from .device_types.b4com import B4COM
 from .tgbot import tg_bot
+
+
+
+
+message_logger = logging.getLogger('recieved_messages')
+message_logger.setLevel(logging.INFO)
+file_handler = logging.FileHandler('/opt/netbox/netbox/plugins/file.log')
+formatter = logging.Formatter('%(asctime)s - %(message)s')
+file_handler.setFormatter(formatter)
+message_logger.addHandler(file_handler)
 
 
 
@@ -52,22 +66,97 @@ class CORE():#main class of plugin
                 conn_data = call.connection_exec(**prep)#connection executing to target device, parse and prepare data for adding to netbox
                 print("<<< Start core_exec.py >>>")
             elif kwargs['purpose_value'] == 'edit':
-                call = EXTRACT_NB()
-                extract = call.extract_for_edit(**kwargs)#extract all data about recieved device from netbox
-                if extract[0] == False:
-                    return [False, extract[1]]
-                elif extract[0] == True:
-                    extract = extract[1]
-                print("<<< Start core_exec.py >>>")
-                call = CONNECT_DEVICE()
-                prep = call.edit_preparing(**extract)#prepare data for connect to device
-                print("<<< Start core_exec.py >>>")
-                call = CONNECT_DEVICE()
-                print(prep)
-                conn_data = call.connection_exec(**prep)#connection executing to target device, parse and prepare data for next tasks
-                print("<<< Start core_exec.py >>>")
-            else:
-                return [False,None]
+                false_devices = []
+                #{'purpose_value': 'edit', 'data': {'edit': {'devices': ['7188', '7189', '7190', '7191'], 'edit_target_list': ['hostname', 'secondary_ip']}, 'add': {}, 'diff': {}}}
+                try:
+                    devices = kwargs['data']['edit']['devices']
+                    target_list = kwargs['data']['edit']['edit_target_list']
+                except Exception as err:
+                    return [False,"devices not found in core_exec.py"]
+                success_devices = []
+
+                """
+                    for dev in devices:
+                        call = EXTRACT_NB()
+                        extract = call.extract_for_edit(**{"device_id":dev,"target_list":target_list})  # extract all data about recieved device from netbox
+                        if extract[0] == False:
+                            false_devices.append(dev)
+                        elif extract[0] == True:
+                            extract = extract[1]
+                            print("<<< Start core_exec.py >>>")
+                            call = CONNECT_DEVICE()
+                            prep = call.edit_preparing(**extract)#prepare data for connect to device
+                            print("<<< Start core_exec.py >>>")
+                            call = CONNECT_DEVICE()
+                            print(prep)
+                            conn_data = call.connection_exec(**prep)#connection executing to target device, parse and prepare data for next tasks
+                            print("<<< Start core_exec.py >>>")
+                            if conn_data[0] == False:
+                                false_devices.append(dev)
+                            elif conn_data[0] == True:
+                                call = EDIT_NB()
+                                result = call.edit_device(**conn_data[1])  # edit device , only changed data will be edit
+                                if result[0] == False:
+                                    false_devices.append(dev)
+                                elif result[0] == True:
+                                    success_devices.append(result[1])
+                                print("<<< Start core_exec.py >>>")
+                        else:
+                            false_devices.append(dev)
+                """
+                if devices and target_list:
+                    with ThreadPoolExecutor(max_workers=10) as executor:  # Установите max_workers в зависимости от задач
+                        futures = []
+
+                        # Отправляем задачи в пул потоков
+                        for dev in devices:
+                            futures.append(
+                                executor.submit(
+                                    lambda dev=dev: (
+                                        EXTRACT_NB().extract_for_edit(device_id=dev, target_list=target_list)
+                                    )
+                                )
+                            )
+
+                        for future in as_completed(futures):
+                            try:
+                                extract = future.result()
+
+                                if not extract[0]:
+                                    false_devices.append(dev)
+                                    continue
+
+                                extract = extract[1]
+                                print("<<< Start core_exec.py >>>")
+                                prep = CONNECT_DEVICE().edit_preparing(**extract)  # Подготовка данных для подключения
+
+                                conn_data = CONNECT_DEVICE().connection_exec(**prep)  # Выполнение подключения к устройству
+
+                                if not conn_data[0]:  # Ошибка подключения
+                                    false_devices.append(dev)
+                                    continue
+
+                                result = EDIT_NB().edit_device(**conn_data[1])  # Редактирование устройства
+
+                                if not result[0]:  # Ошибка редактирования
+                                    false_devices.append(dev)
+                                else:
+                                    success_devices.append(result[1])
+
+                            except Exception as e:
+                                print(f"Error processing device {dev}: {e}")
+                                false_devices.append(dev)
+                    message = (f'Netbox.handler[ "Event_Edit Devices from csv file" ]\n Successfull edited devices list - [ {success_devices} ] '
+                        f'\n failed edited devices list - [ {false_devices} ]\n List edited facilities {target_list} \n Time: [ "{datetime.datetime.now()}" ]')
+                    sender = tg_bot(message)
+                    sender.tg_sender()
+                    return [True,{"success_devices":success_devices,"false_devices":false_devices}]
+                else:
+                    return [False,"dont enough data"]
+
+
+
+
             ###call function for connection to device and collect the data
 
             if kwargs['purpose_value'] == 'add':
@@ -76,24 +165,8 @@ class CORE():#main class of plugin
                     result = [False,conn_data[2]]
                 elif conn_data[0] == True:
                     result = call.add_device(**conn_data[1])#add device to netbox
-                print("<<< Start core_exec.py >>>")
-            elif kwargs['purpose_value'] == 'edit':
-                call = PARSE_DATA()
-                diff = call.compare_diff_for_edit(**conn_data)#compare differents between extracted data fro netbox and collected from connection to device
-                print("<<< Start core_exec.py >>>")
-                if diff['data']['add']['stack_enable'] == True:
-                        call = EDIT_NB()
-                        result = call.edit_vc(**diff)#edit device, but that is stack , this devices will be delete and add for new then
-                        print("<<< Start core_exec.py >>>")
-                elif diff['data']['add']['stack_enable'] == False:
-                        call = EDIT_NB()
-                        result = call.edit_device(**diff)# edit device , only changed data will be edit
-                        print("<<< Start core_exec.py >>>")
-                else:
-                    result = [False, None]
-            else:
-                result = [False, None]
-            return result
+                    print("<<< Start core_exec.py >>>")
+                    return result
 
         def add_offline(self, **kwargs):
             print("<<< Start core_exec.py >>>")
@@ -117,6 +190,7 @@ class CORE():#main class of plugin
                 for data in executor.map(partial_func, my_list):
                     if data[0] == True:
                         list_for_connect.append(data[1])
+            message_logger.info(f"Debug log# list for connect  in core_exec.py: {list_for_connect}")
             list_bad = [item for item in list_for_connect if item['data']['add']['conn_scheme'] == False]
             list_for_connect = [item for item in list_for_connect if item['data']['add']['conn_scheme'] != False]
             for r in list_bad:
@@ -130,6 +204,7 @@ class CORE():#main class of plugin
                         list_bad_result.append(data[1])
                     elif data[0] == True:
                         list_after_conn.append(data[1])
+            message_logger.info(f"Debug log# list after connect  in core_exec.py: {list_after_conn}")
             print("<<< Start core_exec.py >>>")
             #print(list_after_conn)
             for l in list_after_conn:
@@ -271,7 +346,11 @@ class CONNECT_DEVICE():#func for parse and prepare data for connection and other
             nb.http_session.verify = False
             platform_main = nb.dcim.platforms.get(id=data['platform'])
             platform = str(platform_main)
+            print("here")
+            print(platform)
             platform_id = int(platform_main.id)
+            print("here")
+            print(platform_id)
             data.update({'ip_conn':ip_conn,'mask':mask,
                          'platform_name':platform,'platform':platform_id,
                          'primary_ip':primary_ip,'conn_scheme':conn_scheme
@@ -334,71 +413,80 @@ class CONNECT_DEVICE():#func for parse and prepare data for connection and other
 
         def connection_exec(self, **kwargs):# method for consider and execute connection to devices
             print("<<< Start core_exec.py >>>")
+            try:
+                platform_mappings = {
+                    "Huawei.VRP": (HUAWEI_CONN, "conn_Huawei"),
+                    "Juniper.JUNOS": (JUNIPER_CONN, "conn_Juniper_rpc"),
+                    "Cisco.IOS": (CISCO_CONN, "conn_Cisco_IOS"),
+                    "Cisco.IOSXE": (CISCO_CONN, "conn_Cisco_IOS"),
+                    "Cisco.IOSXR": (CISCO_CONN, "conn_Cisco_IOS_XR"),
+                    "IBM.NOS": (IBM, "conn_IBM_lenovo_sw"),
+                    "Cisco.NXOS": (CISCO_CONN, "conn_Cisco_NXOS"),
+                    "Aruba.ArubaOS": (ARUBA_OS, "conn_AWMP"),
+                    "Fortinet.Fortigate": (FORTINET_CONN, "conn_FortiGate"),
+                    "OS.Linux": (LINUX, "conn_OS_Linux"),
+                    "HP.ProCurve9xxx": (HPProCurve9xxx, "conn_ProCurve9xxx"),
+                    "MikroTik.RouterOS": (MIKROTIK_CONN, "conn_RouterOS"),
+                    "Cisco.ASA": (CISCO_CONN, "conn_Cisco_ASA"),
+                    "Qtech.QSW": (QTECH_CONN, "conn_qtech"),
+                    "B4TECH": (B4COM, "conn_B4COM_sw")
+                }
+                platform = None
+                if kwargs['purpose_value'] == 'add':
+                    platform = kwargs['data']['add']['platform_name']
+                elif kwargs['purpose_value'] == 'edit':
+                    platform = kwargs['data']['edit']['platform_name']
+                if platform != None:
+                    connection_class, method_name = platform_mappings.get(platform, (None, None))
+                    if connection_class is not None and method_name is not None:
+                        call = connection_class()
+                        data_from_conn = getattr(call, method_name)(**kwargs)
+                        return data_from_conn
+                    else:
+                        return [False, None]
 
-            platform_mappings = {
-                "Huawei.VRP": (HUAWEI_CONN, "conn_Huawei"),
-                "Juniper.JUNOS": (JUNIPER_CONN, "conn_Juniper_rpc"),
-                "Cisco.IOS": (CISCO_CONN, "conn_Cisco_IOS"),
-                "Cisco.IOSXE": (CISCO_CONN, "conn_Cisco_IOS"),
-                "Cisco.IOSXR": (CISCO_CONN, "conn_Cisco_IOS_XR"),
-                "IBM.NOS": (IBM, "conn_IBM_lenovo_sw"),
-                "Cisco.NXOS": (CISCO_CONN, "conn_Cisco_NXOS"),
-                "Aruba.ArubaOS": (ARUBA_OS, "conn_AWMP"),
-                "Fortinet.Fortigate": (FORTINET_CONN, "conn_FortiGate"),
-                "OS.Linux": (LINUX, "conn_OS_Linux"),
-                "HP.ProCurve9xxx": (HPProCurve9xxx, "conn_ProCurve9xxx"),
-                "MikroTik.RouterOS": (MIKROTIK_CONN, "conn_RouterOS"),
-                "Cisco.ASA": (CISCO_CONN, "conn_Cisco_ASA"),
-                "Qtech.QSW": (QTECH_CONN, "conn_qtech")
-            }
-            platform = None
-            if kwargs['purpose_value'] == 'add':
-                platform = kwargs['data']['add']['platform_name']
-            elif kwargs['purpose_value'] == 'edit':
-                platform = kwargs['data']['edit']['platform_name']
-            if platform != None:
-                connection_class, method_name = platform_mappings.get(platform, (None, None))
-                if connection_class is not None and method_name is not None:
-                    call = connection_class()
-                    data_from_conn = getattr(call, method_name)(**kwargs)
-                    return data_from_conn
-                else:
-                    return [False, None]
+            except Exception as err:
+                print(f"Error in core_exec.py: {err}")
+                return [False, f"{err}| {kwargs}"]
 
 
         def connection_csv_exec(self, kwargs):# method for consider and execute connection to devices for
             # csv part of lugin , so this another method because call via mutilple stream method
             print("<<< Start core_exec.py >>>")
-
-            platform_mappings = {
-                "Huawei.VRP": (HUAWEI_CONN, "conn_Huawei"),
-                "Juniper.JUNOS": (JUNIPER_CONN, "conn_Juniper_rpc"),
-                "Cisco.IOS": (CISCO_CONN, "conn_Cisco_IOS"),
-                "Cisco.IOSXE": (CISCO_CONN, "conn_Cisco_IOS"),
-                "Cisco.IOSXR": (CISCO_CONN, "conn_Cisco_IOS_XR"),
-                "IBM.NOS": (IBM, "conn_IBM_lenovo_sw"),
-                "Cisco.NXOS": (CISCO_CONN, "conn_Cisco_NXOS"),
-                "Aruba.ArubaOS": (ARUBA_OS, "conn_AWMP"),
-                "Fortinet.Fortigate": (FORTINET_CONN, "conn_FortiGate"),
-                "OS.Linux": (LINUX, "conn_OS_Linux"),
-                "HP.ProCurve9xxx": (HPProCurve9xxx, "conn_ProCurve9xxx"),
-                "MikroTik.RouterOS": (MIKROTIK_CONN, "conn_RouterOS"),
-                "Cisco.ASA": (CISCO_CONN, "conn_Cisco_ASA"),
-                "Qtech.QSW": (QTECH_CONN, "conn_qtech")
-            }
-            platform = None
-            if kwargs['purpose_value'] == 'add':
-                platform = kwargs['data']['add']['platform_name']
-            elif kwargs['purpose_value'] == 'edit':
-                platform = kwargs['data']['edit']['platform_name']
-            if platform != None:
-                connection_class, method_name = platform_mappings.get(platform, (None, None))
-                if connection_class is not None and method_name is not None:
-                    call = connection_class()
-                    data_from_conn = getattr(call, method_name)(**kwargs)
-                    return data_from_conn
-                else:
-                    return [False, kwargs['data']['add']['primary_ip']]
+            try:
+                platform_mappings = {
+                    "Huawei.VRP": (HUAWEI_CONN, "conn_Huawei"),
+                    "Juniper.JUNOS": (JUNIPER_CONN, "conn_Juniper_rpc"),
+                    "Cisco.IOS": (CISCO_CONN, "conn_Cisco_IOS"),
+                    "Cisco.IOSXE": (CISCO_CONN, "conn_Cisco_IOS"),
+                    "Cisco.IOSXR": (CISCO_CONN, "conn_Cisco_IOS_XR"),
+                    "IBM.NOS": (IBM, "conn_IBM_lenovo_sw"),
+                    "Cisco.NXOS": (CISCO_CONN, "conn_Cisco_NXOS"),
+                    "Aruba.ArubaOS": (ARUBA_OS, "conn_AWMP"),
+                    "Fortinet.Fortigate": (FORTINET_CONN, "conn_FortiGate"),
+                    "OS.Linux": (LINUX, "conn_OS_Linux"),
+                    "HP.ProCurve9xxx": (HPProCurve9xxx, "conn_ProCurve9xxx"),
+                    "MikroTik.RouterOS": (MIKROTIK_CONN, "conn_RouterOS"),
+                    "Cisco.ASA": (CISCO_CONN, "conn_Cisco_ASA"),
+                    "Qtech.QSW": (QTECH_CONN, "conn_qtech"),
+                    "B4TECH": (B4COM, "conn_B4COM_sw")
+                }
+                platform = None
+                if kwargs['purpose_value'] == 'add':
+                    platform = kwargs['data']['add']['platform_name']
+                elif kwargs['purpose_value'] == 'edit':
+                    platform = kwargs['data']['edit']['platform_name']
+                if platform != None:
+                    connection_class, method_name = platform_mappings.get(platform, (None, None))
+                    if connection_class is not None and method_name is not None:
+                        call = connection_class()
+                        data_from_conn = getattr(call, method_name)(**kwargs)
+                        return data_from_conn
+                    else:
+                        return [False, kwargs['data']['add']['primary_ip']]
+            except Exception as err:
+                print(f"Error in core_exec.py: {err}")
+                return [False, f"{err}| {kwargs}"]
 
 
 class PARSE_DATA():

@@ -3,17 +3,25 @@
 
 
 from django import forms
+import logging
 
 
 from ipam.formfields import IPNetworkFormField
 from netbox.forms import NetBoxModelForm
-from utilities.forms.fields import DynamicModelChoiceField
+from utilities.forms.fields import DynamicModelChoiceField,DynamicMultipleChoiceField
 from dcim.models.sites import Location,Site
 from dcim.models.racks import Rack
 from dcim.models.devices import Platform,DeviceType,DeviceRole,Manufacturer,Device
 from tenancy.models.tenants import Tenant
 from tenancy.models.contacts import ContactRole
 
+
+message_logger = logging.getLogger('recieved_messages')
+message_logger.setLevel(logging.INFO)
+file_handler = logging.FileHandler('/opt/netbox/netbox/plugins/file.log')
+formatter = logging.Formatter('%(asctime)s - %(message)s')
+file_handler.setFormatter(formatter)
+message_logger.addHandler(file_handler)
 
 
 class Device_Offline_PluginForm(NetBoxModelForm):
@@ -73,11 +81,25 @@ class Device_Active_PluginForm(NetBoxModelForm):
 
 
 class Device_Change_Active_PluginForm(NetBoxModelForm):
-    devices = DynamicModelChoiceField(required=True, label='devices', queryset=Device.objects.all())
+    devices = []
+    try:
+
+        #devices = DynamicModelChoiceField(required=True, label='devices', queryset=Device.objects.all())
+        devices = DynamicMultipleChoiceField(
+            required=True,
+            label='devices',
+            choices=[(device.id, device.name) for device in Device.objects.all()]  # Генерация списка кортежей
+        )
+        #message_logger.info(f"Debug log:  data is {devices.choices} ")
+        secondary_ip = forms.BooleanField(label='Secondary ip(only for b4com devices)', required=False)
+        hostname = forms.BooleanField(label='hostname', required=False)
+    except Exception as err:
+        message_logger.info(f"Debug log: {err}")
+
 
     class Meta:
         model = Location
-        fields = ['devices']
+        fields = ['devices','hostname','secondary_ip']
 
 
 class Device_ADD_CSV_PluginForm(forms.Form):

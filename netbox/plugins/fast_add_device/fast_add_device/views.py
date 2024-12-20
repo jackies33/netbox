@@ -8,6 +8,7 @@ from django.shortcuts import render
 from django.http import HttpResponse,JsonResponse,HttpResponseBadRequest
 from http import HTTPStatus
 import csv
+import logging
 
 
 
@@ -18,6 +19,12 @@ from .forms import Device_Offline_PluginForm,Device_Active_PluginForm,\
     Device_Change_Active_PluginForm,Device_ADD_CSV_PluginForm
 
 
+message_logger = logging.getLogger('recieved_messages')
+message_logger.setLevel(logging.INFO)
+file_handler = logging.FileHandler('/opt/netbox/netbox/plugins/file.log')
+formatter = logging.Formatter('%(asctime)s - %(message)s')
+file_handler.setFormatter(formatter)
+message_logger.addHandler(file_handler)
 
 
 null = None
@@ -50,10 +57,20 @@ class Add_Device_Active_View(generic.TemplateView):
             if form.is_valid():
                 ip_address = form.cleaned_data['ip_address']
                 platform = form.cleaned_data['platform'].id
+                #print(platform)
+                #message_logger.info(f"Debug log: {platform}")
                 device_role = form.cleaned_data['device_role'].id
+                #print(device_role)
+                #message_logger.info(f"Debug log: {device_role}")
                 tenants = form.cleaned_data['tenants'].id
+                #print(tenants)
+                #message_logger.info(f"Debug log: {tenants}")
                 site = form.cleaned_data['site'].id
+                #print(site)
+                #message_logger.info(f"Debug log: {site}")
                 tg_resource_group = form.cleaned_data['tg_resource_group'].id
+                #print(tg_resource_group)
+                #message_logger.info(f"Debug log: {tg_resource_group}")
                 stack_enable = form.cleaned_data['stack']
                 if stack_enable == 'False':
                     stack_enable = False
@@ -62,15 +79,18 @@ class Add_Device_Active_View(generic.TemplateView):
                 try:
                     location = form.cleaned_data['location'].id
                     location = int(location)
+                    #print(location)
                 except Exception as err:
                     location = None
                 try:
                     racks = form.cleaned_data['racks'].id
+                    #print(racks)
                     racks = int(racks)
                 except Exception as err:
                     racks = None
                 try:
                     map_resource_group = form.cleaned_data['map_resource_group'].id
+                    #print(map_resource_group)
                     map_resource_group = int(map_resource_group)
                 except Exception as err:
                     map_resource_group = None
@@ -79,7 +99,7 @@ class Add_Device_Active_View(generic.TemplateView):
                     name_of_establishment = str(name_of_establishment)
                 except Exception as err:
                     name_of_establishment = None
-
+                #print("all")
                 trans_dict = {'purpose_value': 'add',
                                                     'data': {
                                                         'edit': {},
@@ -100,6 +120,7 @@ class Add_Device_Active_View(generic.TemplateView):
                                                         'diff': {}
                                                     }
                 }
+                #print(trans_dict)
                 call = CORE()
                 connecting = call.add_edit_plugin(**trans_dict)
                 if connecting[0] == True:
@@ -339,6 +360,9 @@ class Add_Device_Offline_View(generic.TemplateView):
                           status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
+
+
+
 class Change_Device_Active_View(generic.TemplateView):
     print("<<< Start views.py >>>")
     template_success = 'fast_add_device/active_change_success.html'
@@ -349,44 +373,75 @@ class Change_Device_Active_View(generic.TemplateView):
     def get_context_data(self, **kwargs):
         try:
             con = super().get_context_data(**kwargs)
-            con['form'] = self.form_class
+            # Создаем экземпляр формы, чтобы передать его в контекст
+            form = self.form_class()
+            con['form'] = form
             return con
         except Exception as err:
             return JsonResponse({'response': 'False', 'connecting': err}, status=500)
 
     def get(self, request):
         try:
-            return render(request, self.template_main, context={'form': self.form_class})
+            # Передаем экземпляр формы в шаблон
+            form = self.form_class()
+            return render(request, self.template_main, context={'form': form})
         except Exception as err:
             return JsonResponse({'response': 'False', 'connecting': err}, status=500)
+
     def post(self, request):
         try:
-
-            form = self.form_class(request.POST)
+            form_data = request.POST
+            devices = form_data.getlist('devices')
+            hostname_diff = form_data.get('hostname')
+            secondary_ip_diff = form_data.getlist('secondary_ip')
+            #form = self.form_class(request.POST)
+            edit_list = []
+            #message_logger.info(f"Debug log: {form}")
+            #message_logger.info(f"Debug log: {form['devices']}")
+            """
             if form.is_valid():
-                device = form.cleaned_data['devices'].id
-                trans_dict = {'purpose_value': 'edit',
-                           'data':{
-                               'edit':{"device_id":int(device)},
-                               'add':{},
-                               'diff':{}
-                    }
+                # Получаем данные из формы
+                devices = form.cleaned_data['devices']  # Это список id устройств
+                hostname_diff = form.cleaned_data['hostname']
+                if hostname_diff:
+                    edit_list.append("hostname")
+                secondary_ip_diff = form.cleaned_data['secondary_ip']
+                if secondary_ip_diff:
+                    edit_list.append("secondary_ip")
+            """
+            if hostname_diff:
+                edit_list.append("hostname")
+            if secondary_ip_diff:
+                edit_list.append("secondary_ip")
+            # Формируем данные для дальнейшей обработки
+            trans_dict = {
+                'purpose_value': 'edit',
+                'data': {
+                    'edit': {"devices": devices, 'edit_target_list': edit_list},
+                    'add': {},
+                    'diff': {}
                 }
-                call = CORE()
-                connecting = call.add_edit_plugin(**trans_dict)
-                if connecting[0] == True :
-                    return render(request, self.template_success, context={'response': "True",'connecting': connecting[1]},status=HTTPStatus.CREATED)
-                elif connecting[0] == False:
-                    return render(request, self.template_bad_result,
-                                  context={'response': "False", 'connecting': connecting[1]}, status=HTTPStatus.INTERNAL_SERVER_ERROR)
-                else:
-                    return HttpResponse('Something gone wrong', status=HTTPStatus.BAD_REQUEST)
+            }
+            #message_logger.info(f"Debug log: {trans_dict}")
+            call = CORE()
+            connecting = call.add_edit_plugin(**trans_dict)
+            # Имитация подключения и выполнения действия
+            #connecting = [False, "This plugin is under maintaining proccess..."]
+
+            if connecting[0] == True:
+                return render(request, self.template_success,
+                              context={'response': "True", 'connecting': connecting[1]}, status=HTTPStatus.CREATED)
+            elif connecting[0] == False:
+                return render(request, self.template_bad_result,
+                              context={'response': "False", 'connecting': connecting[1]},
+                              status=HTTPStatus.INTERNAL_SERVER_ERROR)
             else:
                 return HttpResponse('Something gone wrong', status=HTTPStatus.BAD_REQUEST)
+        #else:
+        #    return HttpResponse('Something gone wrong', status=HTTPStatus.BAD_REQUEST)
 
         except Exception as err:
-            return render(request, self.template_bad_result,
-                          context={'response': "False", 'connecting': err},
+            return render(request, self.template_bad_result, context={'response': "False", 'connecting': err},
                           status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
@@ -440,6 +495,8 @@ def get_location(request):
             sorted_locations = sorted(locations, key=lambda x: x['tree_id'])
             set_levels(sorted_locations)
             add_tiers_to_locations(sorted_locations)
+            #if sorted_locations != [] and sorted_locations != None:
+            #    sorted_locations.append("none")
             return JsonResponse({'location': list(sorted_locations)})
         else:
             return JsonResponse({'error': 'Site ID is missing'}, status=400)
